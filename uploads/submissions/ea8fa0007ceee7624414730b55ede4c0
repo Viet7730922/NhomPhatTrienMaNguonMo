@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bài tập Mảng, Chuỗi & Hàm</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .result-box { background-color: #f0f8ff; padding: 15px; border: 1px solid #ccc; margin-top: 20px; border-radius: 5px; }
+        h1 { text-align: center; }
+        .error { color: red; font-weight: bold; }
+        .label { font-weight: bold; color: #2c3e50; }
+        ul { list-style-type: none; padding-left: 0; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- <h1>PHẦN: MẢNG, CHUỖI & HÀM</h1> -->
+    <h3>Bài tập 1: Xử lý mảng số nguyên</h3>
+
+    <form method="post" action="">
+        <label for="n">Nhập số tự nhiên n:</label>
+        <input type="text" id="n" name="n" required min="1" value="<?php echo isset($_POST['n']) ? htmlspecialchars($_POST['n']) : ''; ?>">
+        <button type="submit" name="submit">Thực hiện</button>
+    </form>
+
+    <?php
+    if (isset($_POST['submit'])) {
+        $n_input = $_POST['n'];
+
+        if (is_numeric($n_input) && $n_input > 0 && floor($n_input) == $n_input) {
+            $n = (int)$n_input;
+
+            echo "<div class='result-box'>";
+            echo "<p class='label'>a. Kiểm tra điều kiện:</p>";
+            echo "<p>Số <strong>$n</strong> là số nguyên dương. (Thỏa mãn điều kiện)</p>";
+
+            $arr = [];
+            for ($i = 0; $i < $n; $i++) {
+                $arr[] = rand(-500, 500);
+            }
+
+            echo "<p class='label'>b. Mảng phát sinh ngẫu nhiên ($n phần tử):</p>";
+            echo "<p>" . implode(", ", $arr) . "</p>";
+
+            $count_even = 0;
+            foreach ($arr as $value) {
+                if ($value % 2 == 0) {
+                    $count_even++;
+                }
+            }
+
+            echo "<p class='label'>c. Số phần tử là số chẵn:</p>";
+            echo "<p>Có <strong>$count_even</strong> phần tử chẵn.</p>";
+
+            $count_less_100 = 0;
+            foreach ($arr as $value) {
+                if ($value < 100) {
+                    $count_less_100++;
+                }
+            }
+
+            echo "<p class='label'>d. Số phần tử nhỏ hơn 100:</p>";
+            echo "<p>Có <strong>$count_less_100</strong> phần tử nhỏ hơn 100.</p>";
+
+            $sum_negative = 0;
+            $negative_elements = [];
+            foreach($arr as $value) {
+                if ($value < 0) {
+                    $sum_negative += $value;
+                    $negative_elements[] = $value; 
+                }
+            }
+
+            echo "<p class='label'> e. Tổng các phần tử là số âm: </p>";
+            if (count($negative_elements) > 0) {
+                echo "<p> Tổng = <strong>$sum_negative </strong> (". implode(", ",$negative_elements) . ").</p>";
+            } else {
+                echo "<p> Tổng = <strong>0 </strong>(Không có phần tử âm nào).</p>";
+            }
+
+            $positions_zero = [];
+            foreach ($arr as $index => $value) {
+                if ($value == 0) {
+                    $positions_zero[] = $index;
+                }
+            }
+
+            echo "<p class='label'>f. Vị trí các phần tử có giá trị bằng 0:</p>";
+            if (count($positions_zero) > 0) {
+                echo "<p>Vị trí (index): " . implode(", ", $positions_zero) . "</p>";
+            } else {
+                echo "<p>Không có phần tử nào bằng 0.</p>";
+            }
+
+            $sorted_arr = $arr;
+            sort($sorted_arr);
+
+            echo "<p class='label'>g. Mảng sau khi sắp xếp tăng dần:</p>";
+            echo "<p>" . implode(", ", $sorted_arr) . "</p>";
+
+            echo "</div>";
+
+        } else {
+            echo "<div class='result-box error'>";
+            echo "<p>Lỗi: Vui lòng nhập một số nguyên dương (n > 0).</p>";
+            echo "</div>";
+        }
+    }
+    ?>
+</div>
+
+</body>
+</html>

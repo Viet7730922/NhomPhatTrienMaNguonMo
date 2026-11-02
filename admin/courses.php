@@ -139,7 +139,7 @@ require __DIR__ . '/../includes/header.php';
                     <th>Giảng viên</th>
                     <th>Danh mục</th>
                     <th class="text-center">Bài học</th>
-                    <th class="text-center">Học viên</th>
+                    <th class="text-center">Sinh viên</th>
                     <th>Trạng thái</th>
                     <th>Thao tác</th>
                 </tr>

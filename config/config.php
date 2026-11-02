@@ -36,3 +36,12 @@ if (session_status() === PHP_SESSION_NONE) {
     ]);
     session_start();
 }
+
+// Tham số dạng mảng (?q[]=x, name[]=x) không hợp lệ ở mọi trang. Chỉ remove_files[] là hợp lệ.
+foreach ($_GET as $k => $v) {
+    if (is_array($v)) { $_GET[$k] = ''; }
+}
+foreach ($_POST as $k => $v) {
+    if (is_array($v) && $k !== 'remove_files') { $_POST[$k] = ''; }
+}
+unset($k, $v);

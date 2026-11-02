@@ -139,7 +139,7 @@ require __DIR__ . '/../includes/header.php';
                         <?php if ($isEdit && $lesson['file_path']): ?>
                             <div class="mb-2 small">
                                 <i class="bi bi-paperclip"></i>
-                                <a href="<?= e(uploadedFileUrl('lessons', $lesson['file_path'])) ?>" target="_blank">Tài liệu hiện tại</a>
+                                <a href="<?= url('lesson_file.php?id=' . (int) $lesson['id']) ?>">Tài liệu hiện tại</a>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" id="remove_file" name="remove_file">

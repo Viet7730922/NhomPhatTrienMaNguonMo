@@ -8,13 +8,13 @@
 USE elearning;
 SET NAMES utf8mb4;
 
--- 2 học viên giả định (mật khẩu: 123456)
+-- 2 sinh viên giả định (mật khẩu: 123456)
 INSERT INTO users (id, full_name, email, password, role) VALUES
 (6, 'Phạm Quốc Bảo', 'student2@elearning.local', '$2b$12$QOg8GwfG9PPoH2K3DbdR..zUvFpkxWTOer.LRdm/AtFRbrxWe9/Oi', 'student'),
 (7, 'Võ Thị Lan',    'student3@elearning.local', '$2b$12$QOg8GwfG9PPoH2K3DbdR..zUvFpkxWTOer.LRdm/AtFRbrxWe9/Oi', 'student')
 ON DUPLICATE KEY UPDATE full_name = VALUES(full_name);
 
--- Cả 3 học viên cùng ghi danh khóa 9 (An toàn và bảo mật thông tin)
+-- Cả 3 sinh viên cùng ghi danh khóa 9 (An toàn và bảo mật thông tin)
 INSERT IGNORE INTO enrollments (student_id, course_id) VALUES (3, 9), (6, 9), (7, 9);
 
 -- Bài tập demo (CASCADE xóa kèm bài nộp cũ nếu chạy lại)

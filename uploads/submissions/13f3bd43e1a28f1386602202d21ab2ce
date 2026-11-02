@@ -1,0 +1,26 @@
+﻿USE Viet_Vo_Quoc_65134318_DB_QLBH;
+GO
+
+INSERT INTO NhaCC (MaNCC, TenNCC, DienThoaiNCC, EmailNCC, DiaChiNCC) VALUES
+    (104096, N'Cửa hàng Thời trang Nam Việt', 0987654321, N'namviet@fashion.com', N'999 Đường Hùng Vương, Quận 5, Cần Thơ'),
+    (110477, N'Cửa hàng Nội thất Gia Phát', 0912345678, N'giaiphat@noithat.com', N'400 Đường Âu Cơ, Quận Tân Phú, Đà Nẵng'),
+    (123456, N'Công ty TNHH Du lịch Á Đông', 0913456789, N'asi.east@travel.com', N'444 Đường Trương Định, Quận Thanh Khê, Đà Nẵng'),
+    (147852, N'Cửa hàng Mỹ phẩm Hàn Quốc', 0988776655, N'beauty@korean.com', N'888 Đường Phạm Văn Đồng, Quận Gò Vấp, Phú Quốc, Kiên Giang'),
+    (179305, N'Công ty TNHH Thực phẩm Sạch', 0909876543, N'contact@thucphamsach.com', N'777 Đường Nguyễn Văn Linh, Quận 7, Đà Lạt, Lâm Đồng'),
+    (181818, N'Công ty TNHH GreenTech', 0901234567, N'info@greentech.com', N'300 Đường Điện Biên Phủ, Quận Bình Thạnh, Huế, Thừa Thiên Huế'),
+    (268406, N'Cửa hàng Sách Minh Long', 0911223344, N'sales@minhlongbook.com', N'500 Đường Lê Văn Sỹ, Quận Phú Nhuận, Vũng Tàu, Bà Rịa - Vũng Tàu'),
+    (333303, N'Công ty TNHH Thiết bị Y tế', 0902345678, N'medical@yte.com', N'200 Đường Tô Hiến Thành, Quận 10, Hà Nội'),
+    (428675, N'Công ty TNHH Du lịch Xanh', 0909123456, N'green@travel.com', N'150 Đường Bùi Thị Xuân, Quận 1, Nha Trang, Khánh Hòa'),
+    (444404, N'Cửa hàng Điện tử Minh Phát', 0909888777, N'sales@minhphat.com', N'789 Đường Trần Hưng Đạo, Quận 5, Hải Phòng'),
+    (524702, N'Công ty Cổ phần XYZ', 0912345678, N'info@xyz.com', N'456 Đường Nguyễn Huệ, Quận 3, Đà Nẵng'),
+    (555555, N'Công ty TNHH Quốc tế Huy Hoàng', 0908123456, N'huyhoang@intl.com', N'101 Đường Cộng Hòa, Quận Tân Bình, Cần Thơ'),
+    (666666, N'Công ty Cổ phần TechNova', 0987123456, N'tecnova@tech.com', N'777 Đường Giải Phóng, Quận Hoàng Mai, Hà Nội'),
+    (737373, N'Cửa hàng Thời trang Kim Anh', 0912333444, N'kimanh@fashion.com', N'222 Đường Cách Mạng Tháng 8, Quận 10, Nha Trang, Khánh Hòa'),
+    (777777, N'Cửa hàng Thực phẩm Hữu cơ EcoGreen', 0918765432, N'ecogreen@organic.com', N'111 Đường Trần Phú, Quận Hải Châu, Đà Nẵng'),
+    (820225, N'Công ty TNHH Công nghệ Viễn thông', 0903456789, N'tech@vienthong.com', N'600 Đường Kha Vạn Cân, Quận Thủ Đức, Hải Phòng'),
+    (880033, N'Cửa hàng Đồ chơi Trẻ em', 0911223344, N'toys@kid.com', N'333 Đường Nguyễn Đình Chiểu, Quận 3, Huế, Thừa Thiên Huế'),
+    (888888, N'Công ty TNHH Logistics Pro', 0905678901, N'logistics@pro.com', N'222 Đường Lương Ngọc Quyến, Quận Hồng Bàng, Hải Phòng'),
+    (933102, N'Công ty TNHH ABC', 0987654321, N'contact@abc.com', N'123 Đường Lê Lợi, Quận 1, Hà Nội'),
+    (999999, N'Cửa hàng Đồ gia dụng SmartHome', 0984567890, N'smarthome@home.com', N'333 Đường 3/2, Quận Ninh Kiều, Cần Thơ');
+
+

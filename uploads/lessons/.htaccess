@@ -1,0 +1,9 @@
+# Tài liệu bài học chỉ dành cho học viên đã ghi danh: chặn truy cập trực tiếp qua URL.
+# File được tải qua lesson_file.php (có kiểm tra quyền).
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

@@ -35,7 +35,7 @@ if (isPost()) {
             }
         }
 
-        // Tạo tài khoản (đăng ký công khai luôn là học viên)
+        // Tạo tài khoản (đăng ký công khai luôn là sinh viên)
         if (!$errors) {
             $stmt = db()->prepare(
                 'INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, "student")'
@@ -56,7 +56,7 @@ require __DIR__ . '/includes/header.php';
     <div class="col-md-6 col-lg-5">
         <div class="card">
             <div class="card-body p-4">
-                <h4 class="mb-4 text-center">Đăng ký tài khoản học viên</h4>
+                <h4 class="mb-4 text-center">Đăng ký tài khoản sinh viên</h4>
 
                 <?php foreach ($errors as $err): ?>
                     <div class="alert alert-danger py-2"><?= e($err) ?></div>

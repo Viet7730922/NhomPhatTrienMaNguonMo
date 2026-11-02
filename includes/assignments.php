@@ -4,7 +4,7 @@
  * Cần require auth.php trước.
  */
 
-// ---- Quy định nộp bài (dùng cho form giảng viên hiện tại và trang nộp bài của học viên ở Bước 4) ----
+// ---- Quy định nộp bài (dùng cho form giảng viên hiện tại và trang nộp bài của sinh viên ở Bước 4) ----
 const SUBMISSION_MAX_FILES = 10;                    // số file tối đa mỗi lần nộp
 const SUBMISSION_MAX_SIZE  = 20 * 1024 * 1024;      // 20 MB mỗi file
 const SUBMISSION_ALLOWED_EXT = [
@@ -114,7 +114,7 @@ function deleteSubmissionFiles(array $storedNames): void
 /**
  * Gửi file bài nộp về trình duyệt dưới dạng TẢI VỀ (attachment).
  * File lưu trên đĩa không có đuôi và luôn được gửi với Content-Type octet-stream,
- * nên file .php / .html do học viên nộp không bao giờ bị thực thi hay hiển thị trong trình duyệt.
+ * nên file .php / .html do sinh viên nộp không bao giờ bị thực thi hay hiển thị trong trình duyệt.
  * Chỉ gọi hàm này SAU KHI đã kiểm tra quyền. Nếu file không còn trên đĩa, hàm trả về (không exit).
  */
 function sendSubmissionFile(array $file): void

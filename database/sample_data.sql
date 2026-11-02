@@ -158,7 +158,7 @@ INSERT INTO lessons (course_id, title, content, sort_order) VALUES
 (15, 'Bài 2: Luật kết hợp', 'Thuật toán Apriori, độ hỗ trợ và độ tin cậy.', 2),
 (15, 'Bài 3: Phân cụm', 'Thuật toán K-means và đánh giá chất lượng phân cụm.', 3);
 
--- ---------- 6. Ghi danh mẫu cho học viên demo (id = 3) ----------
+-- ---------- 6. Ghi danh mẫu cho sinh viên demo (id = 3) ----------
 INSERT INTO enrollments (student_id, course_id) VALUES (3, 1), (3, 4), (3, 10);
 
 -- ---------- 7. Bài tập mẫu ----------

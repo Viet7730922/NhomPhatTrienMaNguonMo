@@ -70,7 +70,7 @@ require __DIR__ . '/../includes/header.php';
                         <th>Danh mục</th>
                         <th class="text-center">Trạng thái</th>
                         <th class="text-center">Bài học</th>
-                        <th class="text-center">Học viên</th>
+                        <th class="text-center">Sinh viên</th>
                         <th class="text-end">Thao tác</th>
                     </tr>
                 </thead>

@@ -4,7 +4,7 @@
  * Dùng: require_once __DIR__ . '/includes/courses.php';  (sau khi đã require auth.php)
  */
 
-/** Lấy 1 khóa học kèm tên giảng viên, danh mục, số bài học, số học viên. Trả về null nếu không có. */
+/** Lấy 1 khóa học kèm tên giảng viên, danh mục, số bài học, số sinh viên. Trả về null nếu không có. */
 function getCourse(int $id): ?array
 {
     $sql = "SELECT c.*, u.full_name AS teacher_name, cat.name AS category_name,
@@ -19,7 +19,7 @@ function getCourse(int $id): ?array
     return $stmt->fetch() ?: null;
 }
 
-/** Học viên đã ghi danh khóa học này chưa? */
+/** Sinh viên đã ghi danh khóa học này chưa? */
 function isEnrolled(int $studentId, int $courseId): bool
 {
     $stmt = db()->prepare('SELECT 1 FROM enrollments WHERE student_id = ? AND course_id = ? LIMIT 1');

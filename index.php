@@ -115,7 +115,7 @@ require __DIR__ . '/includes/header.php';
                             <div>
                                 <i class="bi bi-play-circle"></i> <?= (int) $c['lesson_count'] ?> bài học
                                 &middot;
-                                <i class="bi bi-people"></i> <?= (int) $c['student_count'] ?> học viên
+                                <i class="bi bi-people"></i> <?= (int) $c['student_count'] ?> sinh viên
                             </div>
                         </div>
                     </div>

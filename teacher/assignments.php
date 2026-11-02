@@ -16,6 +16,9 @@ $sql = "SELECT a.*,
 $stmt = db()->prepare($sql);
 $stmt->execute([$courseId]);
 $assignments = $stmt->fetchAll();
+$totalAssignments = count($assignments);
+$pg          = paginate($totalAssignments, 20);
+$assignments = array_slice($assignments, $pg['offset'], $pg['perPage']);
 
 $stmt = db()->prepare('SELECT COUNT(*) FROM enrollments WHERE course_id = ?');
 $stmt->execute([$courseId]);
@@ -36,7 +39,7 @@ require __DIR__ . '/../includes/header.php';
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <div>
         <h3 class="mb-1">Bài tập: <?= e($course['title']) ?></h3>
-        <span class="text-muted small"><?= count($assignments) ?> bài tập &middot; <?= $enrolled ?> học viên ghi danh</span>
+        <span class="text-muted small"><?= count($assignments) ?> bài tập &middot; <?= $enrolled ?> sinh viên ghi danh</span>
     </div>
     <div class="d-flex gap-2">
         <a href="<?= url('teacher/lessons.php?course_id=' . $courseId) ?>" class="btn btn-outline-secondary">
@@ -94,7 +97,7 @@ require __DIR__ . '/../includes/header.php';
                                 <i class="bi bi-pencil"></i> Sửa
                             </a>
                             <form method="post" action="<?= url('teacher/assignment_delete.php') ?>" class="d-inline"
-                                  onsubmit="return confirm('Xóa bài tập này? Toàn bộ bài nộp và điểm của học viên sẽ bị xóa vĩnh viễn.');">
+                                  onsubmit="return confirm('Xóa bài tập này? Toàn bộ bài nộp và điểm của sinh viên sẽ bị xóa vĩnh viễn.');">
                                 <?= csrfField() ?>
                                 <input type="hidden" name="assignment_id" value="<?= (int) $a['id'] ?>">
                                 <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>

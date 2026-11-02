@@ -12,7 +12,7 @@ if (!in_array($filter, ['all', 'pending', 'graded', 'missing'], true)) {
     $filter = 'all';
 }
 
-// Toàn bộ học viên đã ghi danh, kèm bài nộp (nếu có)
+// Toàn bộ sinh viên đã ghi danh, kèm bài nộp (nếu có)
 $sql = "SELECT u.id AS student_id, u.full_name, u.email,
                s.id AS submission_id, s.submitted_at, s.score, s.graded_at,
                (SELECT COUNT(*) FROM submission_files sf WHERE sf.submission_id = s.id) AS file_count
@@ -88,14 +88,14 @@ require __DIR__ . '/../includes/header.php';
 </ul>
 
 <?php if (!$rows): ?>
-    <div class="alert alert-info">Không có học viên nào trong mục này.</div>
+    <div class="alert alert-info">Không có sinh viên nào trong mục này.</div>
 <?php else: ?>
     <div class="card">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Học viên</th>
+                        <th>Sinh viên</th>
                         <th>Trạng thái</th>
                         <th>Thời gian nộp</th>
                         <th class="text-center">Số file</th>
