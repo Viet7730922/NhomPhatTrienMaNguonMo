@@ -1,0 +1,17 @@
+# Playfair cipher (bản nháp, chưa xử lý trường hợp chữ J)
+def build_table(key):
+    key = key.upper().replace("J", "I")
+    seen = []
+    for ch in key + "ABCDEFGHIKLMNOPQRSTUVWXYZ":
+        if ch.isalpha() and ch not in seen:
+            seen.append(ch)
+    return [seen[i:i + 5] for i in range(0, 25, 5)]
+
+def find(table, ch):
+    for r, row in enumerate(table):
+        if ch in row:
+            return r, row.index(ch)
+
+if __name__ == "__main__":
+    for row in build_table("MONARCHY"):
+        print(" ".join(row))

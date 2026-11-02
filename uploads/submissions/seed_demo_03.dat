@@ -1,0 +1,19 @@
+# Vigenere cipher
+def vigenere(text, key, decrypt=False):
+    out, j = [], 0
+    for ch in text:
+        if ch.isalpha():
+            base = ord('A') if ch.isupper() else ord('a')
+            shift = ord(key[j % len(key)].upper()) - ord('A')
+            if decrypt:
+                shift = -shift
+            out.append(chr((ord(ch) - base + shift) % 26 + base))
+            j += 1
+        else:
+            out.append(ch)
+    return "".join(out)
+
+if __name__ == "__main__":
+    c = vigenere("Attack at dawn", "LEMON")
+    print(c)
+    print(vigenere(c, "LEMON", decrypt=True))

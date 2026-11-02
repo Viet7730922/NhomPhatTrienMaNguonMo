@@ -29,7 +29,7 @@ INSERT INTO assignments (course_id, title, description, due_date, max_score) VAL
 (1, 'Bài tập 1: Form đăng ký', 'Viết form đăng ký bằng PHP và lưu vào MySQL.', DATE_ADD(NOW(), INTERVAL 7 DAY), 10);
 
 -- =====================================================
--- DỮ LIỆU MẪU: KHÓA HỌC NGÀNH CÔNG NGHỆ THÔNG TIN
+-- DỮ LIỆU MẪU 3A: KHÓA HỌC NGÀNH CÔNG NGHỆ THÔNG TIN
 -- Tên học phần tham khảo theo khung chương trình CNTT thông thường.
 -- Mô tả, nội dung bài học là nội dung mẫu, giảng viên là tên giả định.
 -- Chạy trong database elearning (phpMyAdmin > SQL).
