@@ -73,6 +73,9 @@ require __DIR__ . '/../includes/header.php';
         <span class="text-muted small ms-1"><?= count($lessons) ?> bài học</span>
     </div>
     <div class="d-flex gap-2">
+        <a href="<?= url('teacher/assignments.php?course_id=' . $courseId) ?>" class="btn btn-outline-primary">
+            <i class="bi bi-clipboard-check"></i> Bài tập
+        </a>
         <a href="<?= url('teacher/course_form.php?id=' . $courseId) ?>" class="btn btn-outline-secondary">
             <i class="bi bi-pencil"></i> Sửa khóa học
         </a>

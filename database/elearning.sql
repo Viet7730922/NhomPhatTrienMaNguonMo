@@ -14,6 +14,7 @@ CREATE DATABASE IF NOT EXISTS elearning
 USE elearning;
 
 -- Xóa bảng cũ (theo thứ tự khóa ngoại) để import lại nhiều lần
+DROP TABLE IF EXISTS submission_files;
 DROP TABLE IF EXISTS submissions;
 DROP TABLE IF EXISTS assignments;
 DROP TABLE IF EXISTS lessons;
@@ -120,3 +121,43 @@ CREATE TABLE submissions (
   FOREIGN KEY (student_id)    REFERENCES users(id)       ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- -----------------------------------------------------
+-- 8. submission_files: các file trong một bài nộp (nhiều file mỗi bài)
+-- -----------------------------------------------------
+CREATE TABLE submission_files (
+  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  submission_id INT UNSIGNED NOT NULL,
+  original_name VARCHAR(255) NOT NULL,              -- tên file gốc học viên nộp (vd: caesar.cpp)
+  stored_name   VARCHAR(100) NOT NULL,              -- tên ngẫu nhiên trên đĩa, không có đuôi
+  file_size     INT UNSIGNED NOT NULL DEFAULT 0,    -- byte
+  uploaded_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- =====================================================
+-- DỮ LIỆU MẪU
+-- =====================================================
+
+-- Mật khẩu: 123456 (bcrypt)
+INSERT INTO users (full_name, email, password, role) VALUES
+('Quản trị viên',   'admin@elearning.local',   '$2b$12$QOg8GwfG9PPoH2K3DbdR..zUvFpkxWTOer.LRdm/AtFRbrxWe9/Oi', 'admin'),
+('Nguyễn Văn Giảng','teacher@elearning.local', '$2b$12$QOg8GwfG9PPoH2K3DbdR..zUvFpkxWTOer.LRdm/AtFRbrxWe9/Oi', 'teacher'),
+('Trần Thị Học',    'student@elearning.local', '$2b$12$QOg8GwfG9PPoH2K3DbdR..zUvFpkxWTOer.LRdm/AtFRbrxWe9/Oi', 'student');
+
+INSERT INTO categories (name) VALUES
+('Lập trình'), ('Thiết kế'), ('Ngoại ngữ');
+
+INSERT INTO courses (teacher_id, category_id, title, description, status) VALUES
+(2, 1, 'Lập trình PHP cơ bản',   'Làm quen cú pháp PHP, xử lý form, kết nối MySQL bằng PDO.', 'published'),
+(2, 1, 'HTML & CSS từ con số 0', 'Xây dựng giao diện web responsive với HTML5, CSS3.',        'published');
+
+INSERT INTO lessons (course_id, title, content, video_url, sort_order) VALUES
+(1, 'Bài 1: Giới thiệu PHP',        'PHP là ngôn ngữ lập trình phía server...', NULL, 1),
+(1, 'Bài 2: Biến và kiểu dữ liệu',  'Cách khai báo biến, các kiểu dữ liệu cơ bản...', NULL, 2),
+(1, 'Bài 3: Kết nối MySQL với PDO', 'Tạo kết nối, prepared statements...', NULL, 3),
+(2, 'Bài 1: Cấu trúc trang HTML',   'Các thẻ cơ bản, cấu trúc một trang web...', NULL, 1);
+
+INSERT INTO enrollments (student_id, course_id) VALUES (3, 1);
+
+INSERT INTO assignments (course_id, title, description, due_date, max_score) VALUES
+(1, 'Bài tập 1: Form đăng ký', 'Viết form đăng ký bằng PHP và lưu vào MySQL.', DATE_ADD(NOW(), INTERVAL 7 DAY), 10);

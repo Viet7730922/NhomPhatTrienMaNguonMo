@@ -1,0 +1,31 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Mã hóa / giải mã Caesar
+string encrypt(const string& text, int k) {
+    string out = text;
+    for (char& c : out) {
+        if (isupper(c)) c = 'A' + (c - 'A' + k) % 26;
+        else if (islower(c)) c = 'a' + (c - 'a' + k) % 26;
+    }
+    return out;
+}
+
+string decrypt(const string& text, int k) {
+    return encrypt(text, 26 - (k % 26));
+}
+
+// Phá mã vét cạn: thử cả 25 khóa
+void bruteForce(const string& cipher) {
+    for (int k = 1; k < 26; k++)
+        cout << "k=" << k << ": " << decrypt(cipher, k) << endl;
+}
+
+int main() {
+    string cipher = encrypt("Hello World", 3);
+    cout << cipher << endl;           // Khoor Zruog
+    cout << decrypt(cipher, 3) << endl;
+    bruteForce(cipher);
+    return 0;
+}

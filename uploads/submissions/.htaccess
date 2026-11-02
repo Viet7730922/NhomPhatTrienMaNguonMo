@@ -1,0 +1,9 @@
+# Bài nộp của học viên là dữ liệu riêng tư: chặn mọi truy cập trực tiếp qua URL.
+# File chỉ được tải thông qua teacher/download.php (có kiểm tra quyền).
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
