@@ -23,7 +23,7 @@ $lessons = $stmt->fetchAll();
 $user       = currentUser();
 $isStudent  = hasRole('student');
 $enrolled   = $isStudent && isEnrolled((int) $user['id'], $id);
-// Học viên đã ghi danh, giảng viên chủ khóa và admin được mở bài học
+// Sinh viên đã ghi danh, giảng viên chủ khóa và admin được mở bài học
 $canOpenLessons = $enrolled
     || hasRole('admin')
     || (hasRole('teacher') && (int) $user['id'] === (int) $course['teacher_id']);
@@ -54,7 +54,7 @@ require __DIR__ . '/includes/header.php';
                 <h2 class="h3"><?= e($course['title']) ?></h2>
                 <p class="text-muted mb-3">
                     <i class="bi bi-person"></i> Giảng viên: <strong><?= e($course['teacher_name']) ?></strong>
-                    &middot; <i class="bi bi-people"></i> <?= (int) $course['student_count'] ?> học viên
+                    &middot; <i class="bi bi-people"></i> <?= (int) $course['student_count'] ?> sinh viên
                 </p>
 
                 <h5>Giới thiệu</h5>
@@ -94,7 +94,7 @@ require __DIR__ . '/includes/header.php';
             <?= courseThumbHtml($course, 200) ?>
             <div class="card-body">
                 <?php if (!$user): ?>
-                    <p class="text-muted small">Đăng nhập bằng tài khoản học viên để ghi danh khóa học này.</p>
+                    <p class="text-muted small">Đăng nhập bằng tài khoản sinh viên để ghi danh khóa học này.</p>
                     <a href="<?= url('login.php') ?>" class="btn btn-primary w-100">Đăng nhập để ghi danh</a>
 
                 <?php elseif ($isStudent && $enrolled): ?>
@@ -117,7 +117,7 @@ require __DIR__ . '/includes/header.php';
                 <?php else: ?>
                     <p class="text-muted small mb-0">
                         Bạn đang xem với vai trò <strong><?= e($user['role']) ?></strong>.
-                        Chỉ tài khoản học viên mới có thể ghi danh.
+                        Chỉ tài khoản sinh viên mới có thể ghi danh.
                     </p>
                 <?php endif; ?>
             </div>

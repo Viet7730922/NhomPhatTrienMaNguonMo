@@ -125,7 +125,7 @@ require __DIR__ . '/../includes/header.php';
                     </div>
 
                     <div class="alert alert-light border small mb-4">
-                        <strong>Quy định nộp bài của học viên:</strong>
+                        <strong>Quy định nộp bài của sinh viên:</strong>
                         tối đa <?= SUBMISSION_MAX_FILES ?> file mỗi lần nộp, mỗi file không quá
                         <?= (int) (SUBMISSION_MAX_SIZE / 1048576) ?> MB.<br>
                         Định dạng cho phép: <?= e(implode(', ', SUBMISSION_ALLOWED_EXT)) ?>.

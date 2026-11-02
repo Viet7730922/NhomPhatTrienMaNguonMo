@@ -81,7 +81,7 @@ function logoutUser(): void
 function requireLogin(): void
 {
     if (!isLoggedIn()) {
-        flash('warning', 'Vui lòng đăng nhập để tiếp tục.');
+        if (empty($_SESSION['flash'])) { flash('warning', 'Vui lòng đăng nhập để tiếp tục.'); }
         redirect(url('login.php'));
     }
 }

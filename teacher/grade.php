@@ -105,7 +105,7 @@ require __DIR__ . '/../includes/header.php';
         <div class="card mb-4">
             <div class="card-header bg-white fw-bold">File đã nộp (<?= count($files) ?>)</div>
             <?php if (!$files): ?>
-                <div class="card-body text-muted">Học viên không đính kèm file.</div>
+                <div class="card-body text-muted">Sinh viên không đính kèm file.</div>
             <?php else: ?>
                 <ul class="list-group list-group-flush">
                     <?php foreach ($files as $f): ?>
@@ -125,7 +125,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
 
         <div class="card">
-            <div class="card-header bg-white fw-bold">Ghi chú của học viên</div>
+            <div class="card-header bg-white fw-bold">Ghi chú của sinh viên</div>
             <div class="card-body">
                 <?php if (!empty($sub['answer_text'])): ?>
                     <?= nl2br(e($sub['answer_text'])) ?>

@@ -35,16 +35,23 @@ $roleLabels = ['admin' => 'Quản trị', 'teacher' => 'Giảng viên', 'student
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="<?= url('index.php') ?>">Khóa học</a></li>
-                    <?php if ($user): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= roleHome($user['role']) ?>"><?= e($roleLabels[$user['role']] ?? '') ?></a>
-                        </li>
-                        <?php if ($user['role'] === 'admin'): ?>
-                            <li class="nav-item"><a class="nav-link" href="<?= url('admin/users.php') ?>">Người dùng</a></li>
-                            <li class="nav-item"><a class="nav-link" href="<?= url('admin/courses.php') ?>">QL khóa học</a></li>
-                            <li class="nav-item"><a class="nav-link" href="<?= url('admin/categories.php') ?>">Danh mục</a></li>
+                        <?php if ($user): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?= roleHome($user['role']) ?>">
+                                    <?= e($roleLabels[$user['role']] ?? '') ?>
+                                </a>
+                            </li>
+
+                            <?php if ($user['role'] === 'admin'): ?>
+                                <li class="nav-item"><a class="nav-link" href="<?= url('admin/users.php') ?>">Người dùng</a></li>
+                                <li class="nav-item"><a class="nav-link" href="<?= url('admin/courses.php') ?>">QL khóa học</a></li>
+                                <li class="nav-item"><a class="nav-link" href="<?= url('admin/categories.php') ?>">Danh mục</a></li>
+
+                            <?php elseif ($user['role'] === 'student'): ?>
+                                <li class="nav-item"><a class="nav-link" href="<?= url('student/assignments.php') ?>">Bài tập</a></li>
+
+                            <?php endif; ?>
                         <?php endif; ?>
-                    <?php endif; ?>
                 </ul>
 
                 <ul class="navbar-nav">

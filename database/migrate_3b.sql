@@ -8,7 +8,7 @@ USE elearning;
 CREATE TABLE IF NOT EXISTS submission_files (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   submission_id INT UNSIGNED NOT NULL,
-  original_name VARCHAR(255) NOT NULL,              -- tên file gốc học viên nộp (vd: caesar.cpp)
+  original_name VARCHAR(255) NOT NULL,              -- tên file gốc sinh viên nộp (vd: caesar.cpp)
   stored_name   VARCHAR(100) NOT NULL,              -- tên ngẫu nhiên trên đĩa, không có đuôi
   file_size     INT UNSIGNED NOT NULL DEFAULT 0,    -- byte
   uploaded_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -1,0 +1,81 @@
+#include "stdio.h"
+#include "iostream"
+using namespace std;
+void NhapMang(int A[], int n){
+	for(int i=0;i<n;i++){
+		cout<<"a["<<i<<"]=";
+		cin>>A[i];}
+}
+void XuatMang(int A[], int n){
+	for(int i=0;i<n;i++){
+		cout<<A[i]<<' ';
+	}
+}
+void TruyXuatCapPT(int A[],int n){
+	int k=11; bool timthay=false;
+	for(int i = 0; i < n - 1; i++){
+		for(int j = i + 1; j < n; j++){
+			if(A[i] + A[j] == k){
+				if(!timthay){
+					cout<<"\nCac cap phan tu co tong bang 11:";
+					timthay=true;
+				}
+				cout <<"("<<A[i] << "," << A[j]<<")  ";
+			}
+		}
+	}
+	if(!timthay){ 
+		printf("\nKhong co cap phan tu nao thoa man.\n");
+	}else cout<<endl;
+}
+
+void TachMang(int A[],int A1[], int A2[], int* n1, int* n2,int n,int vt){
+
+	*n1=vt;
+	for(int i=0;i<*n1;i++){
+		A1[i]=A[i];
+	}
+	*n2=n-vt;
+	for(int j=0;j<*n2;j++){
+		A2[j]=A[vt+j];
+	}
+}
+void InTachMang(int A1[],int n1, int A2[], int n2) {
+	printf("Mang con 1: ");
+	for(int i=0;i<n1;i++){
+		printf("%d ",A1[i]);
+	}
+	printf("\nMang con 2: ");
+	for(int j=0;j<n2;j++){
+		printf("%d ",A2[j]);
+	}
+}
+
+int main(){
+	int n;
+	printf("Nhap n: ");
+	do{
+		scanf("%d",&n);
+	}while(n<1);
+	int A[n];
+	NhapMang(A,n);
+	printf("Mang da nhap la: ");
+	XuatMang(A,n);
+
+	TruyXuatCapPT(A,n);
+	
+	printf("\n*TACH MANG: ");
+	int vt_tach;
+	do{ 
+		printf("\nNhap vi tri can tach mang (0<=vt<=%d): ",n);
+		scanf("%d",&vt_tach);
+	}while(vt_tach<0||vt_tach>n);
+
+	int A1[vt_tach];
+	int A2[n-vt_tach];
+	int n1,n2;
+	TachMang(A,A1,A2,&n1,&n2,n,vt_tach);
+	InTachMang(A1,n1,A2,n2);
+	return 0;
+	
+}

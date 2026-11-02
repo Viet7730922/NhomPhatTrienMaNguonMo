@@ -77,14 +77,14 @@ CREATE TABLE lessons (
 ) ENGINE=InnoDB;
 
 -- -----------------------------------------------------
--- 5. enrollments: học viên ghi danh khóa học
+-- 5. enrollments: sinh viên ghi danh khóa học
 -- -----------------------------------------------------
 CREATE TABLE enrollments (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   student_id    INT UNSIGNED NOT NULL,
   course_id     INT UNSIGNED NOT NULL,
   enrolled_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_student_course (student_id, course_id),   -- 1 học viên chỉ ghi danh 1 lần
+  UNIQUE KEY uq_student_course (student_id, course_id),   -- 1 sinh viên chỉ ghi danh 1 lần
   FOREIGN KEY (student_id) REFERENCES users(id)   ON DELETE CASCADE,
   FOREIGN KEY (course_id)  REFERENCES courses(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -104,7 +104,7 @@ CREATE TABLE assignments (
 ) ENGINE=InnoDB;
 
 -- -----------------------------------------------------
--- 7. submissions: bài nộp của học viên + điểm
+-- 7. submissions: bài nộp của sinh viên + điểm
 -- -----------------------------------------------------
 CREATE TABLE submissions (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -127,7 +127,7 @@ CREATE TABLE submissions (
 CREATE TABLE submission_files (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   submission_id INT UNSIGNED NOT NULL,
-  original_name VARCHAR(255) NOT NULL,              -- tên file gốc học viên nộp (vd: caesar.cpp)
+  original_name VARCHAR(255) NOT NULL,              -- tên file gốc sinh viên nộp (vd: caesar.cpp)
   stored_name   VARCHAR(100) NOT NULL,              -- tên ngẫu nhiên trên đĩa, không có đuôi
   file_size     INT UNSIGNED NOT NULL DEFAULT 0,    -- byte
   uploaded_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
