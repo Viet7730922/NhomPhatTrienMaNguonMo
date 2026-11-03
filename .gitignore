@@ -1,0 +1,14 @@
+# Dữ liệu người dùng: KHÔNG commit (bài nộp của sinh viên là dữ liệu cá nhân)
+/uploads/submissions/*
+/uploads/lessons/*
+/uploads/thumbnails/*
+!/uploads/.htaccess
+!/uploads/submissions/.htaccess
+!/uploads/lessons/.htaccess
+
+# Cấu hình máy cục bộ, IDE, hệ điều hành
+/config/config.local.php
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

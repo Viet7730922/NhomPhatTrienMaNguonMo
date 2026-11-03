@@ -1,1 +1,12 @@
-php_flag engine off
+# Không bao giờ thực thi mã trong thư mục uploads.
+# Dùng FilesMatch thay cho "php_flag engine off" vì php_flag chỉ chạy với mod_php (gây lỗi 500 với php-fpm/CGI).
+<FilesMatch "\.(php|phtml|phar|pht|php[0-9])$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+Options -Indexes

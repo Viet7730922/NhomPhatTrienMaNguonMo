@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/security.php';
 requireGuest();
+
+// Hash giả để tốn thời gian verify như thật khi email không tồn tại (chống dò email qua thời gian phản hồi)
+const DUMMY_PASSWORD_HASH = '$2y$10$usesomesillystringfore7hnbRJHxXVLeakoG8K30oukPsA.ztMG';
 
 $errors = [];
 
@@ -13,17 +17,23 @@ if (isPost()) {
 
         if ($email === '' || $password === '') {
             $errors[] = 'Vui lòng nhập email và mật khẩu.';
+        } elseif (loginThrottled($email)) {
+            $errors[] = 'Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau ' . LOGIN_WINDOW_MIN . ' phút.';
         } else {
             $stmt = db()->prepare('SELECT * FROM users WHERE email = ? LIMIT 1');
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 
+            $valid = password_verify($password, $user['password'] ?? DUMMY_PASSWORD_HASH) && $user !== false;
+
             // Thông báo chung để không lộ email nào tồn tại
-            if (!$user || !password_verify($password, $user['password'])) {
+            if (!$valid) {
+                recordLoginFailure($email);
                 $errors[] = 'Email hoặc mật khẩu không đúng.';
             } elseif (!$user['is_active']) {
                 $errors[] = 'Tài khoản của bạn đã bị khóa.';
             } else {
+                clearLoginFailures($email);
                 loginUser($user);
                 flash('success', 'Xin chào ' . $user['full_name'] . '!');
                 redirect(roleHome($user['role']));
