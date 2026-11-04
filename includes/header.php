@@ -49,8 +49,8 @@ $roleLabels = ['admin' => 'Quản trị', 'teacher' => 'Giảng viên', 'student
 
                         <?php elseif ($user['role'] === 'student'): ?>
                             <li class="nav-item"><a class="nav-link" href="<?= url('student/assignments.php') ?>">Bài tập</a></li>
-
                         <?php endif; ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= url('profile.php') ?>">Thông tin cá nhân</a></li>
                     <?php endif; ?>
                 </ul>
 
@@ -66,27 +66,11 @@ $roleLabels = ['admin' => 'Quản trị', 'teacher' => 'Giảng viên', 'student
                                         <?= e($user['email']) ?> (<?= e($user['role']) ?>)
                                     </span>
                                 </li>
-
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-
-                                <!-- Thông tin cá nhân -->
-                                <li>
-                                    <a class="dropdown-item" href="<?= url('profile.php') ?>">
-                                        <i class="bi bi-person me-2"></i>
-                                        Thông tin cá nhân
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-
-                                <!-- Đăng xuất -->
                                 <li>
                                     <a class="dropdown-item" href="<?= url('logout.php') ?>">
-                                        <i class="bi bi-box-arrow-right me-2"></i>
                                         Đăng xuất
                                     </a>
                                 </li>
