@@ -8,6 +8,7 @@
 
 # Cấu hình máy cục bộ, IDE, hệ điều hành
 /config/config.local.php
+/config/mail.local.php
 .vscode/
 .idea/
 .DS_Store

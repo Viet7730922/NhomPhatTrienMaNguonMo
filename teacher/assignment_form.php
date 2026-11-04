@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/teacher.php';
 require_once __DIR__ . '/../includes/assignments.php';
+require_once __DIR__ . '/../includes/notify.php';
 requireRole('teacher');
 
 $assignmentId = (int) ($_GET['id'] ?? 0);
@@ -69,7 +70,9 @@ if (isPost()) {
                     'INSERT INTO assignments (course_id, title, description, due_date, max_score) VALUES (?, ?, ?, ?, ?)'
                 );
                 $stmt->execute([$courseId, $title, $description, $dueValue, $max]);
+                $newId = (int) db()->lastInsertId();
                 flash('success', 'Đã tạo bài tập.');
+                notifyNewAssignment($newId);   // gửi email cho sinh viên đã ghi danh
             }
             redirect($backUrl);
         }
