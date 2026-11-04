@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/student.php';
+require_once __DIR__ . '/../includes/notify.php';
+
 requireRole('student');
 
 $studentId    = (int) currentUser()['id'];
@@ -128,6 +130,8 @@ if (isPost()) {
             if (!$errors) {
                 deleteSubmissionFiles($toUnlink);
                 flash('success', $sub ? 'Đã cập nhật bài nộp.' : 'Nộp bài thành công.');
+                // gửi email cho giảng viên
+                notifyTeacherSubmission($assignmentId, $studentId, $sub !== null);   
                 redirect($selfUrl);
             }
         }
