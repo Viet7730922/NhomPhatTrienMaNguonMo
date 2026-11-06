@@ -111,6 +111,7 @@ NhomPhatTrienMaNguonMo/
 - Tạo khóa học, bài học, tài liệu đính kèm
 - Đăng ký khóa học cho sinh viên
 - Giao bài tập và nộp bài
+- Nhận bài tập bằng file, Online text có định dạng, hoặc cả hai
 - Làm bài kiểm tra (quiz) với thời gian và điểm số
 - Chấm điểm, xem kết quả và phản hồi
 - Theo dõi tiến độ học tập
@@ -128,6 +129,7 @@ NhomPhatTrienMaNguonMo/
 - Mở phpMyAdmin
 - Tạo database tên `elearning`
 - Import file: `database/database.sql`
+- Nếu đang nâng cấp database đã có dữ liệu, chạy một lần file `database/migrate_online_text.sql` trong phpMyAdmin (tab SQL). Các bài tập cũ tiếp tục nhận file và ghi chú như trước.
 
 ### Bước 3: Cấu hình ứng dụng
 

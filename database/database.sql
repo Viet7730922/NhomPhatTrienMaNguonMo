@@ -113,6 +113,7 @@ CREATE TABLE assignments (
   description   TEXT,
   due_date      DATETIME DEFAULT NULL,
   max_score     DECIMAL(5,2) NOT NULL DEFAULT 10,
+  submission_mode ENUM('file','online_text','both') NOT NULL DEFAULT 'both',
   created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_course_due (course_id, due_date),
   FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
@@ -124,6 +125,7 @@ CREATE TABLE submissions (
   assignment_id INT UNSIGNED NOT NULL,
   student_id    INT UNSIGNED NOT NULL,
   answer_text   TEXT,
+  answer_format ENUM('plain','html') NOT NULL DEFAULT 'plain',
   submitted_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   score         DECIMAL(5,2) DEFAULT NULL,          -- NULL = chưa chấm
   feedback      TEXT,

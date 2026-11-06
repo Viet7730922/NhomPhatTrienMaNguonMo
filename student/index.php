@@ -41,7 +41,7 @@ require __DIR__ . '/../includes/header.php';
                 Bạn chưa ghi danh khóa học nào. <a href="<?= url('index.php') ?>">Khám phá khóa học</a>
             </div>
         <?php else: ?>
-            <div class="row g-3">
+            <div class="row g-3 course-grid">
                 <?php foreach ($courses as $c): ?>
                     <div class="col-md-6">
                         <div class="card h-100 overflow-hidden">

@@ -12,10 +12,16 @@ $courseId     = $isEdit ? (int) $assignment['course_id'] : (int) ($_GET['course_
 $course       = requireOwnCourse($courseId);
 $backUrl      = url('teacher/assignments.php?course_id=' . $courseId);
 $errors       = [];
+$submissionMode = $assignment['submission_mode'] ?? 'file';
+$hasSubmissions = false;
 
 // Điểm cao nhất đã chấm (không cho hạ điểm tối đa xuống thấp hơn)
 $highestGiven = 0.0;
 if ($isEdit) {
+    $stmt = db()->prepare('SELECT COUNT(*) FROM submissions WHERE assignment_id = ?');
+    $stmt->execute([$assignmentId]);
+    $hasSubmissions = (int) $stmt->fetchColumn() > 0;
+
     $stmt = db()->prepare('SELECT MAX(score) FROM submissions WHERE assignment_id = ?');
     $stmt->execute([$assignmentId]);
     $highestGiven = (float) $stmt->fetchColumn();
@@ -34,6 +40,15 @@ if (isPost()) {
         $description = trim($_POST['description'] ?? '');
         $dueInput    = trim($_POST['due_date'] ?? '');
         $maxScore    = str_replace(',', '.', trim($_POST['max_score'] ?? ''));
+        $requestedMode = trim($_POST['submission_mode'] ?? $submissionMode);
+
+        if (!in_array($requestedMode, ['file', 'online_text', 'both'], true)) {
+            $errors[] = 'Hình thức nộp bài không hợp lệ.';
+        } elseif ($hasSubmissions && $requestedMode !== ($assignment['submission_mode'] ?? 'both')) {
+            $errors[] = 'Không thể đổi hình thức nộp bài sau khi đã có sinh viên nộp bài.';
+        } else {
+            $submissionMode = $requestedMode;
+        }
 
         if ($title === '' || mb_strlen($title) > 200) {
             $errors[] = 'Tiêu đề không được để trống và tối đa 200 ký tự.';
@@ -60,16 +75,17 @@ if (isPost()) {
             $max = round((float) $maxScore, 2);
             if ($isEdit) {
                 $stmt = db()->prepare(
-                    'UPDATE assignments SET title = ?, description = ?, due_date = ?, max_score = ?
+                    'UPDATE assignments SET title = ?, description = ?, due_date = ?, max_score = ?, submission_mode = ?
                      WHERE id = ? AND course_id = ?'
                 );
-                $stmt->execute([$title, $description, $dueValue, $max, $assignmentId, $courseId]);
+                $stmt->execute([$title, $description, $dueValue, $max, $submissionMode, $assignmentId, $courseId]);
                 flash('success', 'Đã cập nhật bài tập.');
             } else {
                 $stmt = db()->prepare(
-                    'INSERT INTO assignments (course_id, title, description, due_date, max_score) VALUES (?, ?, ?, ?, ?)'
+                    'INSERT INTO assignments (course_id, title, description, due_date, max_score, submission_mode)
+                     VALUES (?, ?, ?, ?, ?, ?)'
                 );
-                $stmt->execute([$courseId, $title, $description, $dueValue, $max]);
+                $stmt->execute([$courseId, $title, $description, $dueValue, $max, $submissionMode]);
                 $newId = (int) db()->lastInsertId();
                 flash('success', 'Đã tạo bài tập.');
                 notifyNewAssignment($newId);   // gửi email cho sinh viên đã ghi danh
@@ -115,6 +131,21 @@ require __DIR__ . '/../includes/header.php';
                         <textarea class="form-control" id="description" name="description" rows="8"><?= e($description) ?></textarea>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label" for="submission_mode">Hình thức nộp bài</label>
+                        <select class="form-select" id="submission_mode" name="submission_mode" <?= $hasSubmissions ? 'disabled' : '' ?>>
+                            <option value="file" <?= $submissionMode === 'file' ? 'selected' : '' ?>>Nộp file</option>
+                            <option value="online_text" <?= $submissionMode === 'online_text' ? 'selected' : '' ?>>Online text (soạn thảo trực tuyến)</option>
+                            <option value="both" <?= $submissionMode === 'both' ? 'selected' : '' ?>>Cả file và Online text</option>
+                        </select>
+                        <?php if ($hasSubmissions): ?>
+                            <input type="hidden" name="submission_mode" value="<?= e($submissionMode) ?>">
+                            <div class="form-text">Không thể đổi hình thức sau khi sinh viên đã nộp bài.</div>
+                        <?php else: ?>
+                            <div class="form-text">Online text cho phép sinh viên soạn nội dung trực tiếp bằng trình soạn thảo định dạng.</div>
+                        <?php endif; ?>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-7 mb-3">
                             <label class="form-label" for="due_date">Hạn nộp (để trống nếu không giới hạn)</label>
@@ -127,12 +158,14 @@ require __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
 
-                    <div class="alert alert-light border small mb-4">
-                        <strong>Quy định nộp bài của sinh viên:</strong>
-                        tối đa <?= SUBMISSION_MAX_FILES ?> file mỗi lần nộp, mỗi file không quá
-                        <?= (int) (SUBMISSION_MAX_SIZE / 1048576) ?> MB.<br>
-                        Định dạng cho phép: <?= e(implode(', ', SUBMISSION_ALLOWED_EXT)) ?>.
-                    </div>
+                    <?php if ($submissionMode !== 'online_text'): ?>
+                        <div class="alert alert-light border small mb-4" id="submission-file-policy" data-file-policy>
+                            <strong>Quy định nộp file:</strong>
+                            tối đa <?= SUBMISSION_MAX_FILES ?> file mỗi lần nộp, mỗi file không quá
+                            <?= (int) (SUBMISSION_MAX_SIZE / 1048576) ?> MB.<br>
+                            Định dạng cho phép: <?= e(implode(', ', SUBMISSION_ALLOWED_EXT)) ?>.
+                        </div>
+                    <?php endif; ?>
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary"><?= $isEdit ? 'Lưu thay đổi' : 'Tạo bài tập' ?></button>

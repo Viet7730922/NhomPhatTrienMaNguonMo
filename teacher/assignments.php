@@ -78,6 +78,13 @@ require __DIR__ . '/../includes/header.php';
                             <a href="<?= url('teacher/submissions.php?assignment_id=' . (int) $a['id']) ?>" class="text-decoration-none">
                                 <?= e($a['title']) ?>
                             </a>
+                            <div>
+                                <?php
+                                $modeLabels = ['file' => 'Nộp file', 'online_text' => 'Online text', 'both' => 'File + Online text'];
+                                $mode = $a['submission_mode'] ?? 'both';
+                                ?>
+                                <span class="badge text-bg-light border"><?= e($modeLabels[$mode] ?? $modeLabels['both']) ?></span>
+                            </div>
                         </td>
                         <td class="text-nowrap">
                             <?= e(fmtDateTime($a['due_date'], 'Không giới hạn')) ?>

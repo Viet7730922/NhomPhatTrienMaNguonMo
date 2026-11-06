@@ -14,7 +14,8 @@ require_once __DIR__ . '/mail.php';
 /** Cắt chuỗi cho gọn (đếm theo ký tự, không cắt giữa chữ tiếng Việt). */
 function mailExcerpt(?string $text, int $max = 300): string
 {
-    $text = trim(preg_replace('/\s+/u', ' ', (string) $text));
+    $text = html_entity_decode(strip_tags((string) $text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = trim(preg_replace('/\s+/u', ' ', $text));
     return mb_strimwidth($text, 0, $max, '…', 'UTF-8');
 }
 
@@ -80,6 +81,7 @@ function notifyNewAssignment(int $assignmentId): void
                   . mailRow('Bài tập', (string) $a['title'])
                   . mailRow('Hạn nộp', fmtDateTime($a['due_date'], 'Không giới hạn'))
                   . mailRow('Điểm tối đa', formatScore($a['max_score']))
+                  . mailRow('Hình thức nộp', ['file' => 'Nộp file', 'online_text' => 'Online text', 'both' => 'File và Online text'][$a['submission_mode'] ?? 'both'])
                   . '</table>';
             if (!empty($a['description'])) {
                 $body .= '<div style="border-left:3px solid #dee2e6;padding-left:12px;color:#495057;font-size:14px">'
@@ -173,7 +175,8 @@ function notifyTeacherSubmission(int $assignmentId, int $studentId, bool $isUpda
                            . '<ul style="margin:0 0 12px;padding-left:20px;font-size:14px">' . $fileList . '</ul>';
                 }
                 if (!empty($sub['answer_text'])) {
-                    $body .= '<div style="font-size:14px;margin:0 0 4px"><strong>Ghi chú của sinh viên:</strong></div>'
+                    $answerLabel = ($sub['answer_format'] ?? 'plain') === 'html' ? 'Online text của sinh viên:' : 'Ghi chú của sinh viên:';
+                    $body .= '<div style="font-size:14px;margin:0 0 4px"><strong>' . e($answerLabel) . '</strong></div>'
                            . '<div style="border-left:3px solid #dee2e6;padding-left:12px;color:#495057;font-size:14px">'
                            . e(mailExcerpt($sub['answer_text'])) . '</div>';
                 }

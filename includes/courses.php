@@ -45,14 +45,14 @@ function courseThumbHtml(array $course, int $height = 160): string
     $thumb = $course['thumbnail'] ?? null;
     if ($thumb && is_file(UPLOAD_PATH . 'thumbnails/' . basename($thumb))) {
         return '<img src="' . e(UPLOAD_URL . 'thumbnails/' . rawurlencode(basename($thumb))) . '"'
-             . ' class="w-100" style="height:' . $height . 'px;object-fit:cover" alt="' . e($course['title']) . '">';
+             . ' class="course-thumbnail w-100" style="--course-thumbnail-height:' . $height . 'px;object-fit:cover" alt="' . e($course['title']) . '">';
     }
 
     $palette = [['#4e73df', '#224abe'], ['#1cc88a', '#0f8a5f'], ['#f6c23e', '#c99a14'],
                 ['#e74a3b', '#a8281c'], ['#36b9cc', '#1f8a99'], ['#6f42c1', '#4a2a85']];
     [$from, $to] = $palette[((int) $course['id']) % count($palette)];
 
-    return '<div class="d-flex align-items-center justify-content-center text-white"'
-         . ' style="height:' . $height . 'px;background:linear-gradient(135deg,' . $from . ',' . $to . ')">'
+    return '<div class="course-thumbnail d-flex align-items-center justify-content-center text-white"'
+         . ' style="--course-thumbnail-height:' . $height . 'px;background:linear-gradient(135deg,' . $from . ',' . $to . ')">'
          . '<i class="bi bi-journal-code" style="font-size:3rem"></i></div>';
 }
