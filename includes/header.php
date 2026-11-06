@@ -49,8 +49,8 @@ $roleLabels = ['admin' => 'Quản trị', 'teacher' => 'Giảng viên', 'student
 
                         <?php elseif ($user['role'] === 'student'): ?>
                             <li class="nav-item"><a class="nav-link" href="<?= url('student/assignments.php') ?>">Bài tập</a></li>
+                            <li class="nav-item"><a class="nav-link" href="<?= url('student/quizzes.php') ?>">Kiểm tra</a></li>
                         <?php endif; ?>
-                        <li class="nav-item"><a class="nav-link" href="<?= url('profile.php') ?>">Thông tin cá nhân</a></li>
                     <?php endif; ?>
                 </ul>
 
@@ -61,18 +61,17 @@ $roleLabels = ['admin' => 'Quản trị', 'teacher' => 'Giảng viên', 'student
                                 <i class="bi bi-person-circle"></i> <?= e($user['full_name']) ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <span class="dropdown-item-text text-muted small">
-                                        <?= e($user['email']) ?> (<?= e($user['role']) ?>)
-                                    </span>
-                                </li>
+                                <li><span class="dropdown-item-text text-muted small"><?= e($user['email']) ?> (<?= e($user['role']) ?>)</span></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="<?= url('logout.php') ?>">
-                                        Đăng xuất
-                                    </a>
+                                    <form method="post" action="<?= url('logout.php') ?>" class="m-0">
+                                        <?= csrfField() ?>
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                                        </button>
+                                    </form>
                                 </li>
                             </ul>
                         </li>
