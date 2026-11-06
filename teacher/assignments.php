@@ -45,6 +45,9 @@ require __DIR__ . '/../includes/header.php';
         <a href="<?= url('teacher/lessons.php?course_id=' . $courseId) ?>" class="btn btn-outline-secondary">
             <i class="bi bi-list-ul"></i> Bài học
         </a>
+        <a href="<?= url('teacher/quizzes.php?course_id=' . $courseId) ?>" class="btn btn-outline-primary">
+            <i class="bi bi-ui-checks"></i> Bài kiểm tra
+        </a>
         <a href="<?= url('teacher/assignment_form.php?course_id=' . $courseId) ?>" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Tạo bài tập
         </a>

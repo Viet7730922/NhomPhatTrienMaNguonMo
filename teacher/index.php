@@ -103,6 +103,12 @@ require __DIR__ . '/../includes/header.php';
                                     <span class="badge text-bg-warning"><?= (int) $c['pending_count'] ?></span>
                                 <?php endif; ?>
                             </a>
+                            <a href="<?= url('teacher/quizzes.php?course_id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-ui-checks"></i> Bài kiểm tra
+                            </a>
+                            <a href="<?= url('teacher/quiz_form.php?course_id=' . (int) $c['id']) ?>" class="btn btn-sm btn-primary">
+                                <i class="bi bi-plus-lg"></i> Tạo bài tập trắc nghiệm
+                            </a>
                             <a href="<?= url('teacher/course_form.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-pencil"></i> Sửa
                             </a>
