@@ -24,10 +24,6 @@ USE elearning;
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS activity_logs;
-DROP TABLE IF EXISTS notifications;
-DROP TABLE IF EXISTS course_reviews;
-DROP TABLE IF EXISTS password_resets;
 DROP TABLE IF EXISTS login_attempts;
 DROP TABLE IF EXISTS quiz_answers;
 DROP TABLE IF EXISTS quiz_attempts;
@@ -37,7 +33,6 @@ DROP TABLE IF EXISTS quizzes;
 DROP TABLE IF EXISTS submission_files;
 DROP TABLE IF EXISTS submissions;
 DROP TABLE IF EXISTS assignments;
-DROP TABLE IF EXISTS lesson_progress;
 DROP TABLE IF EXISTS lessons;
 DROP TABLE IF EXISTS enrollments;
 DROP TABLE IF EXISTS courses;
@@ -110,19 +105,7 @@ CREATE TABLE enrollments (
   FOREIGN KEY (course_id)  REFERENCES courses(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 6. lesson_progress: tiến độ học tập (MỚI) - mỗi dòng = 1 bài học đã hoàn thành
-CREATE TABLE lesson_progress (
-  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  student_id    INT UNSIGNED NOT NULL,
-  lesson_id     INT UNSIGNED NOT NULL,
-  completed_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_student_lesson (student_id, lesson_id),
-  KEY idx_lesson (lesson_id),
-  FOREIGN KEY (student_id) REFERENCES users(id)   ON DELETE CASCADE,
-  FOREIGN KEY (lesson_id)  REFERENCES lessons(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
-
--- 7. assignments: bài tập do giảng viên giao
+-- 6. assignments: bài tập do giảng viên giao
 CREATE TABLE assignments (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   course_id     INT UNSIGNED NOT NULL,
@@ -135,7 +118,7 @@ CREATE TABLE assignments (
   FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 8. submissions: bài nộp của sinh viên + điểm (đã bỏ cột file_path cũ, dùng submission_files)
+-- 7. submissions: bài nộp của sinh viên + điểm (đã bỏ cột file_path cũ, dùng submission_files)
 CREATE TABLE submissions (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   assignment_id INT UNSIGNED NOT NULL,
@@ -152,7 +135,7 @@ CREATE TABLE submissions (
   FOREIGN KEY (student_id)    REFERENCES users(id)       ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 9. submission_files: các file trong một bài nộp (nhiều file mỗi bài)
+-- 8. submission_files: các file trong một bài nộp (nhiều file mỗi bài)
 CREATE TABLE submission_files (
   id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   submission_id INT UNSIGNED NOT NULL,
@@ -164,7 +147,7 @@ CREATE TABLE submission_files (
   FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 10. quizzes: cấu hình bài kiểm tra
+-- 9. quizzes: cấu hình bài kiểm tra
 CREATE TABLE quizzes (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   course_id      INT UNSIGNED NOT NULL,
@@ -184,7 +167,7 @@ CREATE TABLE quizzes (
   FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 11. quiz_questions: câu hỏi
+-- 10. quiz_questions: câu hỏi
 CREATE TABLE quiz_questions (
   id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   quiz_id    INT UNSIGNED NOT NULL,
@@ -196,7 +179,7 @@ CREATE TABLE quiz_questions (
   FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 12. quiz_options: đáp án của câu trắc nghiệm
+-- 11. quiz_options: đáp án của câu trắc nghiệm
 CREATE TABLE quiz_options (
   id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   question_id INT UNSIGNED NOT NULL,
@@ -206,7 +189,7 @@ CREATE TABLE quiz_options (
   FOREIGN KEY (question_id) REFERENCES quiz_questions(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 13. quiz_attempts: mỗi lần làm bài của sinh viên
+-- 12. quiz_attempts: mỗi lần làm bài của sinh viên
 CREATE TABLE quiz_attempts (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   quiz_id        INT UNSIGNED NOT NULL,
@@ -226,7 +209,7 @@ CREATE TABLE quiz_attempts (
   FOREIGN KEY (student_id) REFERENCES users(id)   ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 14. quiz_answers: câu trả lời trong mỗi lần làm
+-- 13. quiz_answers: câu trả lời trong mỗi lần làm
 CREATE TABLE quiz_answers (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   attempt_id     INT UNSIGNED NOT NULL,
@@ -241,69 +224,13 @@ CREATE TABLE quiz_answers (
   FOREIGN KEY (question_id) REFERENCES quiz_questions(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 15. login_attempts: ghi lần đăng nhập sai để chống dò mật khẩu
+-- 14. login_attempts: ghi lần đăng nhập sai để chống dò mật khẩu
 CREATE TABLE login_attempts (
   id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   email        VARCHAR(150) NOT NULL,
   ip           VARCHAR(45) NOT NULL,
   attempted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_email_ip_time (email, ip, attempted_at)
-) ENGINE=InnoDB;
-
--- 16. password_resets: yêu cầu đặt lại mật khẩu (MỚI) - chỉ lưu SHA-256 của token, không lưu token gốc
-CREATE TABLE password_resets (
-  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id     INT UNSIGNED NOT NULL,
-  token_hash  CHAR(64) NOT NULL UNIQUE,
-  expires_at  DATETIME NOT NULL,
-  used_at     DATETIME DEFAULT NULL,                             -- NULL = chưa dùng
-  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY idx_user (user_id),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
-
--- 17. course_reviews: đánh giá khóa học (MỚI) - mỗi sinh viên đánh giá 1 lần / khóa
-CREATE TABLE course_reviews (
-  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  course_id   INT UNSIGNED NOT NULL,
-  student_id  INT UNSIGNED NOT NULL,
-  rating      TINYINT UNSIGNED NOT NULL,                         -- 1..5
-  comment     TEXT,
-  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_course_student (course_id, student_id),
-  KEY idx_student (student_id),
-  FOREIGN KEY (course_id)  REFERENCES courses(id) ON DELETE CASCADE,
-  FOREIGN KEY (student_id) REFERENCES users(id)   ON DELETE CASCADE,
-  CONSTRAINT chk_rating CHECK (rating BETWEEN 1 AND 5)
-) ENGINE=InnoDB;
-
--- 18. notifications: thông báo trong hệ thống (MỚI); link là đường dẫn tương đối, in ra bằng url()
-CREATE TABLE notifications (
-  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id     INT UNSIGNED NOT NULL,
-  type        VARCHAR(40) NOT NULL,                              -- assignment_new | assignment_graded | enrollment | quiz_open ...
-  title       VARCHAR(200) NOT NULL,
-  message     VARCHAR(500) NOT NULL,
-  link        VARCHAR(255) DEFAULT NULL,
-  is_read     TINYINT(1) NOT NULL DEFAULT 0,
-  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY idx_user_read_created (user_id, is_read, created_at),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
-
--- 19. activity_logs: nhật ký hoạt động cho admin (MỚI); xóa user thì giữ log (user_id = NULL)
-CREATE TABLE activity_logs (
-  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  user_id     INT UNSIGNED DEFAULT NULL,
-  action      VARCHAR(50) NOT NULL,                              -- vd: login, course.create, grade.save
-  entity_type VARCHAR(30) DEFAULT NULL,
-  entity_id   INT UNSIGNED DEFAULT NULL,
-  detail      VARCHAR(255) DEFAULT NULL,
-  ip          VARCHAR(45) DEFAULT NULL,
-  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY idx_user (user_id),
-  KEY idx_action_created (action, created_at),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- =====================================================
@@ -550,155 +477,6 @@ INSERT INTO enrollments (id, student_id, course_id, enrolled_at) VALUES
 (97, 30, 5, DATE_SUB(NOW(), INTERVAL 69120 MINUTE)),
 (98, 30, 7, DATE_SUB(NOW(), INTERVAL 72000 MINUTE)),
 (99, 30, 13, DATE_SUB(NOW(), INTERVAL 118080 MINUTE));
-
-INSERT INTO lesson_progress (id, student_id, lesson_id, completed_at) VALUES
-(1, 8, 1, DATE_SUB(NOW(), INTERVAL 97920 MINUTE)),
-(2, 8, 2, DATE_SUB(NOW(), INTERVAL 87240 MINUTE)),
-(3, 8, 3, DATE_SUB(NOW(), INTERVAL 92400 MINUTE)),
-(4, 8, 4, DATE_SUB(NOW(), INTERVAL 84600 MINUTE)),
-(5, 8, 11, DATE_SUB(NOW(), INTERVAL 63360 MINUTE)),
-(6, 8, 12, DATE_SUB(NOW(), INTERVAL 78600 MINUTE)),
-(7, 8, 13, DATE_SUB(NOW(), INTERVAL 63600 MINUTE)),
-(8, 8, 14, DATE_SUB(NOW(), INTERVAL 67320 MINUTE)),
-(9, 8, 27, DATE_SUB(NOW(), INTERVAL 66240 MINUTE)),
-(10, 8, 30, DATE_SUB(NOW(), INTERVAL 86400 MINUTE)),
-(11, 8, 36, DATE_SUB(NOW(), INTERVAL 47520 MINUTE)),
-(12, 8, 37, DATE_SUB(NOW(), INTERVAL 49800 MINUTE)),
-(13, 8, 38, DATE_SUB(NOW(), INTERVAL 54960 MINUTE)),
-(14, 8, 18, DATE_SUB(NOW(), INTERVAL 87840 MINUTE)),
-(15, 8, 19, DATE_SUB(NOW(), INTERVAL 80040 MINUTE)),
-(16, 8, 20, DATE_SUB(NOW(), INTERVAL 70800 MINUTE)),
-(17, 8, 24, DATE_SUB(NOW(), INTERVAL 43200 MINUTE)),
-(18, 8, 25, DATE_SUB(NOW(), INTERVAL 58440 MINUTE)),
-(19, 8, 26, DATE_SUB(NOW(), INTERVAL 39120 MINUTE)),
-(20, 9, 57, DATE_SUB(NOW(), INTERVAL 97920 MINUTE)),
-(21, 9, 58, DATE_SUB(NOW(), INTERVAL 93000 MINUTE)),
-(22, 9, 51, DATE_SUB(NOW(), INTERVAL 125280 MINUTE)),
-(23, 9, 21, DATE_SUB(NOW(), INTERVAL 86400 MINUTE)),
-(24, 9, 22, DATE_SUB(NOW(), INTERVAL 81480 MINUTE)),
-(25, 9, 23, DATE_SUB(NOW(), INTERVAL 75120 MINUTE)),
-(26, 10, 54, DATE_SUB(NOW(), INTERVAL 99360 MINUTE)),
-(27, 10, 27, DATE_SUB(NOW(), INTERVAL 95040 MINUTE)),
-(28, 10, 28, DATE_SUB(NOW(), INTERVAL 85800 MINUTE)),
-(29, 10, 42, DATE_SUB(NOW(), INTERVAL 99360 MINUTE)),
-(30, 10, 30, DATE_SUB(NOW(), INTERVAL 33120 MINUTE)),
-(31, 10, 31, DATE_SUB(NOW(), INTERVAL 31080 MINUTE)),
-(32, 11, 24, DATE_SUB(NOW(), INTERVAL 90720 MINUTE)),
-(33, 11, 15, DATE_SUB(NOW(), INTERVAL 38880 MINUTE)),
-(34, 11, 16, DATE_SUB(NOW(), INTERVAL 52680 MINUTE)),
-(35, 11, 5, DATE_SUB(NOW(), INTERVAL 116640 MINUTE)),
-(36, 11, 36, DATE_SUB(NOW(), INTERVAL 108000 MINUTE)),
-(37, 11, 37, DATE_SUB(NOW(), INTERVAL 93000 MINUTE)),
-(38, 11, 27, DATE_SUB(NOW(), INTERVAL 90720 MINUTE)),
-(39, 12, 51, DATE_SUB(NOW(), INTERVAL 106560 MINUTE)),
-(40, 12, 52, DATE_SUB(NOW(), INTERVAL 108840 MINUTE)),
-(41, 12, 24, DATE_SUB(NOW(), INTERVAL 108000 MINUTE)),
-(42, 12, 25, DATE_SUB(NOW(), INTERVAL 93000 MINUTE)),
-(43, 13, 51, DATE_SUB(NOW(), INTERVAL 92160 MINUTE)),
-(44, 13, 52, DATE_SUB(NOW(), INTERVAL 98760 MINUTE)),
-(45, 13, 27, DATE_SUB(NOW(), INTERVAL 103680 MINUTE)),
-(46, 13, 28, DATE_SUB(NOW(), INTERVAL 111720 MINUTE)),
-(47, 13, 33, DATE_SUB(NOW(), INTERVAL 108000 MINUTE)),
-(48, 13, 34, DATE_SUB(NOW(), INTERVAL 100200 MINUTE)),
-(49, 13, 35, DATE_SUB(NOW(), INTERVAL 118320 MINUTE)),
-(50, 14, 21, DATE_SUB(NOW(), INTERVAL 56160 MINUTE)),
-(51, 14, 30, DATE_SUB(NOW(), INTERVAL 54720 MINUTE)),
-(52, 14, 31, DATE_SUB(NOW(), INTERVAL 54120 MINUTE)),
-(53, 14, 57, DATE_SUB(NOW(), INTERVAL 54720 MINUTE)),
-(54, 14, 58, DATE_SUB(NOW(), INTERVAL 48360 MINUTE)),
-(55, 15, 54, DATE_SUB(NOW(), INTERVAL 105120 MINUTE)),
-(56, 15, 55, DATE_SUB(NOW(), INTERVAL 91560 MINUTE)),
-(57, 15, 56, DATE_SUB(NOW(), INTERVAL 109680 MINUTE)),
-(58, 15, 51, DATE_SUB(NOW(), INTERVAL 82080 MINUTE)),
-(59, 15, 52, DATE_SUB(NOW(), INTERVAL 95880 MINUTE)),
-(60, 15, 53, DATE_SUB(NOW(), INTERVAL 83760 MINUTE)),
-(61, 15, 18, DATE_SUB(NOW(), INTERVAL 80640 MINUTE)),
-(62, 15, 19, DATE_SUB(NOW(), INTERVAL 84360 MINUTE)),
-(63, 15, 11, DATE_SUB(NOW(), INTERVAL 100800 MINUTE)),
-(64, 15, 12, DATE_SUB(NOW(), INTERVAL 82920 MINUTE)),
-(65, 16, 5, DATE_SUB(NOW(), INTERVAL 50400 MINUTE)),
-(66, 16, 6, DATE_SUB(NOW(), INTERVAL 51240 MINUTE)),
-(67, 16, 18, DATE_SUB(NOW(), INTERVAL 100800 MINUTE)),
-(68, 16, 19, DATE_SUB(NOW(), INTERVAL 104520 MINUTE)),
-(69, 17, 27, DATE_SUB(NOW(), INTERVAL 113760 MINUTE)),
-(70, 17, 28, DATE_SUB(NOW(), INTERVAL 97320 MINUTE)),
-(71, 17, 8, DATE_SUB(NOW(), INTERVAL 87840 MINUTE)),
-(72, 18, 57, DATE_SUB(NOW(), INTERVAL 73440 MINUTE)),
-(73, 19, 8, DATE_SUB(NOW(), INTERVAL 82080 MINUTE)),
-(74, 19, 9, DATE_SUB(NOW(), INTERVAL 95880 MINUTE)),
-(75, 19, 48, DATE_SUB(NOW(), INTERVAL 37440 MINUTE)),
-(76, 19, 49, DATE_SUB(NOW(), INTERVAL 57000 MINUTE)),
-(77, 19, 50, DATE_SUB(NOW(), INTERVAL 46320 MINUTE)),
-(78, 20, 21, DATE_SUB(NOW(), INTERVAL 108000 MINUTE)),
-(79, 20, 22, DATE_SUB(NOW(), INTERVAL 107400 MINUTE)),
-(80, 20, 23, DATE_SUB(NOW(), INTERVAL 114000 MINUTE)),
-(81, 20, 24, DATE_SUB(NOW(), INTERVAL 95040 MINUTE)),
-(82, 20, 25, DATE_SUB(NOW(), INTERVAL 98760 MINUTE)),
-(83, 20, 26, DATE_SUB(NOW(), INTERVAL 96720 MINUTE)),
-(84, 20, 11, DATE_SUB(NOW(), INTERVAL 80640 MINUTE)),
-(85, 20, 12, DATE_SUB(NOW(), INTERVAL 55560 MINUTE)),
-(86, 20, 13, DATE_SUB(NOW(), INTERVAL 54960 MINUTE)),
-(87, 20, 14, DATE_SUB(NOW(), INTERVAL 61560 MINUTE)),
-(88, 20, 30, DATE_SUB(NOW(), INTERVAL 110880 MINUTE)),
-(89, 20, 31, DATE_SUB(NOW(), INTERVAL 105960 MINUTE)),
-(90, 21, 15, DATE_SUB(NOW(), INTERVAL 83520 MINUTE)),
-(91, 21, 16, DATE_SUB(NOW(), INTERVAL 85800 MINUTE)),
-(92, 21, 1, DATE_SUB(NOW(), INTERVAL 115200 MINUTE)),
-(93, 21, 2, DATE_SUB(NOW(), INTERVAL 111720 MINUTE)),
-(94, 21, 3, DATE_SUB(NOW(), INTERVAL 119760 MINUTE)),
-(95, 21, 33, DATE_SUB(NOW(), INTERVAL 95040 MINUTE)),
-(96, 22, 24, DATE_SUB(NOW(), INTERVAL 105120 MINUTE)),
-(97, 22, 25, DATE_SUB(NOW(), INTERVAL 95880 MINUTE)),
-(98, 22, 51, DATE_SUB(NOW(), INTERVAL 100800 MINUTE)),
-(99, 22, 52, DATE_SUB(NOW(), INTERVAL 101640 MINUTE)),
-(100, 22, 30, DATE_SUB(NOW(), INTERVAL 60480 MINUTE)),
-(101, 23, 18, DATE_SUB(NOW(), INTERVAL 70560 MINUTE)),
-(102, 23, 15, DATE_SUB(NOW(), INTERVAL 73440 MINUTE)),
-(103, 23, 30, DATE_SUB(NOW(), INTERVAL 59040 MINUTE)),
-(104, 23, 31, DATE_SUB(NOW(), INTERVAL 44040 MINUTE)),
-(105, 23, 27, DATE_SUB(NOW(), INTERVAL 89280 MINUTE)),
-(106, 23, 28, DATE_SUB(NOW(), INTERVAL 94440 MINUTE)),
-(107, 24, 39, DATE_SUB(NOW(), INTERVAL 74880 MINUTE)),
-(108, 24, 40, DATE_SUB(NOW(), INTERVAL 69960 MINUTE)),
-(109, 24, 1, DATE_SUB(NOW(), INTERVAL 37440 MINUTE)),
-(110, 24, 2, DATE_SUB(NOW(), INTERVAL 39720 MINUTE)),
-(111, 24, 3, DATE_SUB(NOW(), INTERVAL 34800 MINUTE)),
-(112, 24, 11, DATE_SUB(NOW(), INTERVAL 51840 MINUTE)),
-(113, 24, 12, DATE_SUB(NOW(), INTERVAL 52680 MINUTE)),
-(114, 25, 36, DATE_SUB(NOW(), INTERVAL 93600 MINUTE)),
-(115, 25, 37, DATE_SUB(NOW(), INTERVAL 77160 MINUTE)),
-(116, 25, 38, DATE_SUB(NOW(), INTERVAL 98160 MINUTE)),
-(117, 25, 1, DATE_SUB(NOW(), INTERVAL 61920 MINUTE)),
-(118, 25, 2, DATE_SUB(NOW(), INTERVAL 65640 MINUTE)),
-(119, 25, 27, DATE_SUB(NOW(), INTERVAL 80640 MINUTE)),
-(120, 26, 33, DATE_SUB(NOW(), INTERVAL 92160 MINUTE)),
-(121, 26, 34, DATE_SUB(NOW(), INTERVAL 82920 MINUTE)),
-(122, 26, 11, DATE_SUB(NOW(), INTERVAL 106560 MINUTE)),
-(123, 26, 12, DATE_SUB(NOW(), INTERVAL 107400 MINUTE)),
-(124, 26, 24, DATE_SUB(NOW(), INTERVAL 43200 MINUTE)),
-(125, 27, 54, DATE_SUB(NOW(), INTERVAL 72000 MINUTE)),
-(126, 27, 55, DATE_SUB(NOW(), INTERVAL 95880 MINUTE)),
-(127, 27, 21, DATE_SUB(NOW(), INTERVAL 93600 MINUTE)),
-(128, 27, 22, DATE_SUB(NOW(), INTERVAL 85800 MINUTE)),
-(129, 27, 23, DATE_SUB(NOW(), INTERVAL 86640 MINUTE)),
-(130, 27, 42, DATE_SUB(NOW(), INTERVAL 53280 MINUTE)),
-(131, 28, 57, DATE_SUB(NOW(), INTERVAL 56160 MINUTE)),
-(132, 28, 39, DATE_SUB(NOW(), INTERVAL 90720 MINUTE)),
-(133, 28, 40, DATE_SUB(NOW(), INTERVAL 103080 MINUTE)),
-(134, 28, 5, DATE_SUB(NOW(), INTERVAL 70560 MINUTE)),
-(135, 28, 6, DATE_SUB(NOW(), INTERVAL 45480 MINUTE)),
-(136, 29, 57, DATE_SUB(NOW(), INTERVAL 118080 MINUTE)),
-(137, 29, 5, DATE_SUB(NOW(), INTERVAL 102240 MINUTE)),
-(138, 29, 6, DATE_SUB(NOW(), INTERVAL 90120 MINUTE)),
-(139, 29, 48, DATE_SUB(NOW(), INTERVAL 57600 MINUTE)),
-(140, 29, 49, DATE_SUB(NOW(), INTERVAL 67080 MINUTE)),
-(141, 30, 1, DATE_SUB(NOW(), INTERVAL 95040 MINUTE)),
-(142, 30, 2, DATE_SUB(NOW(), INTERVAL 103080 MINUTE)),
-(143, 30, 3, DATE_SUB(NOW(), INTERVAL 75120 MINUTE)),
-(144, 30, 15, DATE_SUB(NOW(), INTERVAL 48960 MINUTE)),
-(145, 30, 16, DATE_SUB(NOW(), INTERVAL 51240 MINUTE)),
-(146, 30, 17, DATE_SUB(NOW(), INTERVAL 42000 MINUTE)),
-(147, 30, 21, DATE_SUB(NOW(), INTERVAL 47520 MINUTE));
 
 INSERT INTO assignments (id, course_id, title, description, due_date, max_score, created_at) VALUES
 (1, 1, 'Bài tập 1: Tính toán cơ bản', 'Viết chương trình nhập hai số, in ra tổng, hiệu, tích, thương. Nộp file mã nguồn.', DATE_SUB(NOW(), INTERVAL 25920 MINUTE), 10, DATE_SUB(NOW(), INTERVAL 46080 MINUTE)),
@@ -1503,163 +1281,5 @@ INSERT INTO login_attempts (id, email, ip, attempted_at) VALUES
 (26, 'student5@elearning.local', '27.72.100.8', DATE_SUB(NOW(), INTERVAL 886 MINUTE)),
 (27, 'student5@elearning.local', '171.248.12.99', DATE_SUB(NOW(), INTERVAL 1227 MINUTE)),
 (28, 'hacker@example.com', '113.161.20.45', DATE_SUB(NOW(), INTERVAL 1196 MINUTE));
-
-INSERT INTO password_resets (id, user_id, token_hash, expires_at, used_at, created_at) VALUES
-(1, 28, '6606a044473fc99bbe85c298677b2921a29efa1a272eb58507e3ebff674892d3', DATE_SUB(NOW(), INTERVAL 14340 MINUTE), DATE_SUB(NOW(), INTERVAL 14391 MINUTE), DATE_SUB(NOW(), INTERVAL 14400 MINUTE)),
-(2, 26, 'ed436d48bb6b6b14cdcf99c32eae5c39ca76227960daa5c1f787027b7827bd9b', DATE_SUB(NOW(), INTERVAL 15780 MINUTE), DATE_SUB(NOW(), INTERVAL 15801 MINUTE), DATE_SUB(NOW(), INTERVAL 15840 MINUTE)),
-(3, 13, 'e5be2aabdeedf8fca8de7439cf144adefc4393d4df4a5a0d7feb45eae4d4aefe', DATE_SUB(NOW(), INTERVAL 18660 MINUTE), DATE_SUB(NOW(), INTERVAL 18705 MINUTE), DATE_SUB(NOW(), INTERVAL 18720 MINUTE)),
-(4, 28, '9222c49631d599ca07bfd79166b0635664395694904ce1627f2c6ed647b61041', DATE_SUB(NOW(), INTERVAL 22980 MINUTE), DATE_SUB(NOW(), INTERVAL 23031 MINUTE), DATE_SUB(NOW(), INTERVAL 23040 MINUTE)),
-(5, 5, 'd87a197d4eeb5a9fdba39993f427eaf953b1c4efa8c525e248936562a290e0e0', DATE_SUB(NOW(), INTERVAL 17220 MINUTE), DATE_SUB(NOW(), INTERVAL 17266 MINUTE), DATE_SUB(NOW(), INTERVAL 17280 MINUTE)),
-(6, 1, '77e91230fd7e1aa2c8d7760d239a22f5eae1fa5c226c16465c668fbc06f9cd48', DATE_SUB(NOW(), INTERVAL 14340 MINUTE), DATE_SUB(NOW(), INTERVAL 14386 MINUTE), DATE_SUB(NOW(), INTERVAL 14400 MINUTE)),
-(7, 13, 'b073b093312352e0ded7542e072a20843b55bc25d9496a35212d6eda5caf82c5', DATE_SUB(NOW(), INTERVAL 17220 MINUTE), DATE_SUB(NOW(), INTERVAL 17271 MINUTE), DATE_SUB(NOW(), INTERVAL 17280 MINUTE)),
-(8, 3, 'e87943a2d2a5de5940406053e644e64bcc4d66136e41a2cfdd03d76f003be25a', DATE_SUB(NOW(), INTERVAL 18660 MINUTE), DATE_SUB(NOW(), INTERVAL 18704 MINUTE), DATE_SUB(NOW(), INTERVAL 18720 MINUTE)),
-(9, 13, '2e79d79fab5999425b6791eea277b7423a801bc0f988c42c871924faa284a9ab', DATE_SUB(NOW(), INTERVAL 28740 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 28800 MINUTE)),
-(10, 11, '43bab47a2f014fb75605570c2b2f3e0714b559388c739875b6d25af3a0103f3f', DATE_SUB(NOW(), INTERVAL 25860 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 25920 MINUTE)),
-(11, 8, 'e07a37684777fde23f03a6354594f1c0b4332d16634c7a26c975457172ef22ee', DATE_SUB(NOW(), INTERVAL 17220 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 17280 MINUTE)),
-(12, 29, 'bfebc2865119b03b9f4f784c729464c3a877d47ff0943499c063842f4e8d67aa', DATE_SUB(NOW(), INTERVAL 28740 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 28800 MINUTE)),
-(13, 30, 'f2f152a9344ed69dbbfe2d29cc54b956547db576bf351baf68c2e6207e4dfac6', DATE_SUB(NOW(), INTERVAL 2820 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 2880 MINUTE)),
-(14, 6, '0dead6b642087b74db906d398e12ff78822e0ca0dd2d29ae27cdcf964ac83e3d', DATE_SUB(NOW(), INTERVAL 22980 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 23040 MINUTE)),
-(15, 26, '5917f368a5856ef91ae337b16469e6a8c563641b3fa7f9f5c6a5dafda1bf37a4', DATE_SUB(NOW(), INTERVAL 4260 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 4320 MINUTE)),
-(16, 2, 'c8e1413983c6876c2d2ce5af61fe6ba3ab613840b68ead7f9f527427bc062361', DATE_SUB(NOW(), INTERVAL 17220 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 17280 MINUTE)),
-(17, 5, '0113d5dc93db6da172eaffdfd59d66e3d802a9fa04c04902bf82c34e8a5b683a', DATE_ADD(NOW(), INTERVAL 42 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 30 MINUTE)),
-(18, 24, '8b49f5125b235889f906d0276586799fdb88ccdc2941772dc8f43c0e9c582b5a', DATE_ADD(NOW(), INTERVAL 47 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 24 MINUTE)),
-(19, 1, '6ce4ac9514b7385faac87754af22f54ceb00b3e0591514aa6b9ecabf228f3f06', DATE_ADD(NOW(), INTERVAL 25 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 27 MINUTE)),
-(20, 27, '5c43f2c6ce4df2e33b34c7284b4c030dc967d67cc9bfce916f63879ed66fef15', DATE_ADD(NOW(), INTERVAL 23 MINUTE), NULL, DATE_SUB(NOW(), INTERVAL 19 MINUTE));
-
-INSERT INTO course_reviews (id, course_id, student_id, rating, comment, created_at) VALUES
-(1, 9, 8, 3, 'Mình học được nhiều kiến thức mới, cảm ơn thầy/cô.', DATE_SUB(NOW(), INTERVAL 40320 MINUTE)),
-(2, 11, 26, 2, 'Khóa học rất dễ hiểu, giảng viên nhiệt tình.', DATE_SUB(NOW(), INTERVAL 33120 MINUTE)),
-(3, 12, 8, 5, 'Nội dung bám sát chương trình, bài tập vừa sức.', DATE_SUB(NOW(), INTERVAL 43200 MINUTE)),
-(4, 10, 20, 5, 'Bài giảng hay nhưng cần thêm ví dụ thực tế.', DATE_SUB(NOW(), INTERVAL 7200 MINUTE)),
-(5, 17, 9, 2, 'Cần bổ sung thêm tài liệu tham khảo.', DATE_SUB(NOW(), INTERVAL 17280 MINUTE)),
-(6, 2, 16, 4, 'Rất hữu ích cho việc ôn thi.', DATE_SUB(NOW(), INTERVAL 40320 MINUTE)),
-(7, 4, 18, 4, 'Tốc độ giảng hơi nhanh ở các bài cuối.', DATE_SUB(NOW(), INTERVAL 25920 MINUTE)),
-(8, 6, 16, 2, 'Rất hữu ích cho việc ôn thi.', DATE_SUB(NOW(), INTERVAL 37440 MINUTE)),
-(9, 3, 17, 4, 'Tốc độ giảng hơi nhanh ở các bài cuối.', DATE_SUB(NOW(), INTERVAL 23040 MINUTE)),
-(10, 18, 17, 4, 'Tốc độ giảng hơi nhanh ở các bài cuối.', DATE_SUB(NOW(), INTERVAL 31680 MINUTE)),
-(11, 1, 30, 4, 'Nội dung bám sát chương trình, bài tập vừa sức.', DATE_SUB(NOW(), INTERVAL 28800 MINUTE)),
-(12, 8, 12, 5, 'Mình học được nhiều kiến thức mới, cảm ơn thầy/cô.', DATE_SUB(NOW(), INTERVAL 41760 MINUTE)),
-(13, 17, 12, 2, 'Mình học được nhiều kiến thức mới, cảm ơn thầy/cô.', DATE_SUB(NOW(), INTERVAL 28800 MINUTE)),
-(14, 13, 13, 5, 'Rất hữu ích cho việc ôn thi.', DATE_SUB(NOW(), INTERVAL 34560 MINUTE)),
-(15, 18, 15, 5, 'Bài giảng hay nhưng cần thêm ví dụ thực tế.', DATE_SUB(NOW(), INTERVAL 28800 MINUTE)),
-(16, 17, 22, 5, 'Nội dung bám sát chương trình, bài tập vừa sức.', DATE_SUB(NOW(), INTERVAL 21600 MINUTE)),
-(17, 3, 22, 3, 'Rất hữu ích cho việc ôn thi.', DATE_SUB(NOW(), INTERVAL 33120 MINUTE)),
-(18, 8, 26, 5, 'Nội dung bám sát chương trình, bài tập vừa sức.', DATE_SUB(NOW(), INTERVAL 30240 MINUTE)),
-(19, 14, 14, 4, 'Cần bổ sung thêm tài liệu tham khảo.', DATE_SUB(NOW(), INTERVAL 10080 MINUTE)),
-(20, 8, 8, 3, 'Rất hữu ích cho việc ôn thi.', DATE_SUB(NOW(), INTERVAL 21600 MINUTE)),
-(21, 14, 27, 4, 'Bài giảng hay nhưng cần thêm ví dụ thực tế.', DATE_SUB(NOW(), INTERVAL 40320 MINUTE)),
-(22, 9, 11, 5, 'Khóa học rất dễ hiểu, giảng viên nhiệt tình.', DATE_SUB(NOW(), INTERVAL 15840 MINUTE)),
-(23, 3, 19, 5, 'Bài tập có độ khó phù hợp, chấm điểm nhanh.', DATE_SUB(NOW(), INTERVAL 2880 MINUTE)),
-(24, 9, 17, 4, 'Nội dung bám sát chương trình, bài tập vừa sức.', DATE_SUB(NOW(), INTERVAL 31680 MINUTE)),
-(25, 19, 14, 2, 'Rất hữu ích cho việc ôn thi.', DATE_SUB(NOW(), INTERVAL 36000 MINUTE)),
-(26, 5, 30, 5, 'Cần bổ sung thêm tài liệu tham khảo.', DATE_SUB(NOW(), INTERVAL 18720 MINUTE)),
-(27, 4, 26, 3, 'Bài giảng hay nhưng cần thêm ví dụ thực tế.', DATE_SUB(NOW(), INTERVAL 15840 MINUTE)),
-(28, 9, 23, 4, 'Bài giảng hay nhưng cần thêm ví dụ thực tế.', DATE_SUB(NOW(), INTERVAL 37440 MINUTE)),
-(29, 18, 25, 4, 'Cần bổ sung thêm tài liệu tham khảo.', DATE_SUB(NOW(), INTERVAL 15840 MINUTE)),
-(30, 5, 13, 5, 'Rất hữu ích cho việc ôn thi.', DATE_SUB(NOW(), INTERVAL 21600 MINUTE)),
-(31, 7, 14, 3, 'Cần bổ sung thêm tài liệu tham khảo.', DATE_SUB(NOW(), INTERVAL 10080 MINUTE)),
-(32, 5, 22, 3, 'Khóa học rất dễ hiểu, giảng viên nhiệt tình.', DATE_SUB(NOW(), INTERVAL 27360 MINUTE)),
-(33, 18, 27, 3, 'Bài tập có độ khó phù hợp, chấm điểm nhanh.', DATE_SUB(NOW(), INTERVAL 8640 MINUTE)),
-(34, 7, 27, 5, 'Cần bổ sung thêm tài liệu tham khảo.', DATE_SUB(NOW(), INTERVAL 11520 MINUTE));
-
-INSERT INTO notifications (id, user_id, type, title, message, link, is_read, created_at) VALUES
-(1, 28, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "So sánh thuật toán sắp xếp" đã có điểm.', 'student/assignment.php?id=4', 1, DATE_SUB(NOW(), INTERVAL 0 MINUTE)),
-(2, 13, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Vẽ sơ đồ UML hệ thống thư viện" đã có điểm.', 'student/assignment.php?id=22', 1, DATE_SUB(NOW(), INTERVAL 435 MINUTE)),
-(3, 20, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập 2: Mảng và chuỗi" đã có điểm.', 'student/assignment.php?id=2', 1, DATE_SUB(NOW(), INTERVAL 762 MINUTE)),
-(4, 13, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Báo cáo tấn công ứng dụng web" đã có điểm.', 'student/assignment.php?id=18', 1, DATE_SUB(NOW(), INTERVAL 1208 MINUTE)),
-(5, 11, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Báo cáo tấn công ứng dụng web" đã có điểm.', 'student/assignment.php?id=18', 1, DATE_SUB(NOW(), INTERVAL 1581 MINUTE)),
-(6, 20, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Phân tích gói tin HTTP" đã có điểm.', 'student/assignment.php?id=16', 1, DATE_SUB(NOW(), INTERVAL 2086 MINUTE)),
-(7, 10, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Báo cáo tấn công ứng dụng web" đã có điểm.', 'student/assignment.php?id=18', 0, DATE_SUB(NOW(), INTERVAL 2128 MINUTE)),
-(8, 15, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Phân tích dữ liệu điểm thi" đã có điểm.', 'student/assignment.php?id=12', 0, DATE_SUB(NOW(), INTERVAL 2328 MINUTE)),
-(9, 18, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập 2: Ứng dụng ghi chú (CRUD)" đã có điểm.', 'student/assignment.php?id=8', 1, DATE_SUB(NOW(), INTERVAL 2369 MINUTE)),
-(10, 23, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập đếm và tổ hợp" đã có điểm.', 'student/assignment.php?id=10', 1, DATE_SUB(NOW(), INTERVAL 2450 MINUTE)),
-(11, 8, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Phân tích gói tin HTTP" đã có điểm.', 'student/assignment.php?id=16', 1, DATE_SUB(NOW(), INTERVAL 2541 MINUTE)),
-(12, 21, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Vẽ sơ đồ UML hệ thống thư viện" đã có điểm.', 'student/assignment.php?id=22', 0, DATE_SUB(NOW(), INTERVAL 2585 MINUTE)),
-(13, 22, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Kế thừa và đa hình: hệ thống hình học" đã có điểm.', 'student/assignment.php?id=6', 1, DATE_SUB(NOW(), INTERVAL 2780 MINUTE)),
-(14, 16, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "So sánh thuật toán sắp xếp" đã có điểm.', 'student/assignment.php?id=4', 1, DATE_SUB(NOW(), INTERVAL 2839 MINUTE)),
-(15, 18, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Thực hành Git theo nhóm" đã có điểm.', 'student/assignment.php?id=24', 1, DATE_SUB(NOW(), INTERVAL 2883 MINUTE)),
-(16, 21, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập 2: Mảng và chuỗi" đã có điểm.', 'student/assignment.php?id=2', 0, DATE_SUB(NOW(), INTERVAL 3137 MINUTE)),
-(17, 24, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập 2: Mảng và chuỗi" đã có điểm.', 'student/assignment.php?id=2', 1, DATE_SUB(NOW(), INTERVAL 3331 MINUTE)),
-(18, 23, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập 2: Truy vấn SQL nâng cao" đã có điểm.', 'student/assignment.php?id=20', 0, DATE_SUB(NOW(), INTERVAL 3362 MINUTE)),
-(19, 8, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Phân tích dữ liệu điểm thi" đã có điểm.', 'student/assignment.php?id=12', 1, DATE_SUB(NOW(), INTERVAL 3648 MINUTE)),
-(20, 22, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập 2: Truy vấn SQL nâng cao" đã có điểm.', 'student/assignment.php?id=20', 1, DATE_SUB(NOW(), INTERVAL 3833 MINUTE)),
-(21, 25, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Báo cáo tấn công ứng dụng web" đã có điểm.', 'student/assignment.php?id=18', 0, DATE_SUB(NOW(), INTERVAL 4104 MINUTE)),
-(22, 10, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập 2: Truy vấn SQL nâng cao" đã có điểm.', 'student/assignment.php?id=20', 1, DATE_SUB(NOW(), INTERVAL 4792 MINUTE)),
-(23, 23, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Phân tích dữ liệu điểm thi" đã có điểm.', 'student/assignment.php?id=12', 0, DATE_SUB(NOW(), INTERVAL 4805 MINUTE)),
-(24, 9, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Báo cáo quản lý bộ nhớ" đã có điểm.', 'student/assignment.php?id=14', 1, DATE_SUB(NOW(), INTERVAL 4949 MINUTE)),
-(25, 20, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập 1: Thiết kế CSDL quản lý thư viện" đã có điểm.', 'student/assignment.php?id=19', 1, DATE_SUB(NOW(), INTERVAL 5451 MINUTE)),
-(26, 14, 'assignment_graded', 'Bài tập đã được chấm', 'Bài nộp của bạn cho "Bài tập 1: Thiết kế CSDL quản lý thư viện" đã có điểm.', 'student/assignment.php?id=19', 0, DATE_SUB(NOW(), INTERVAL 5785 MINUTE)),
-(27, 3, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Nhập môn lập trình".', 'teacher/lessons.php?course_id=1', 0, DATE_SUB(NOW(), INTERVAL 106560 MINUTE)),
-(28, 4, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Lập trình Web".', 'teacher/lessons.php?course_id=4', 0, DATE_SUB(NOW(), INTERVAL 83520 MINUTE)),
-(29, 5, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "An toàn và bảo mật thông tin".', 'teacher/lessons.php?course_id=9', 0, DATE_SUB(NOW(), INTERVAL 83520 MINUTE)),
-(30, 4, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Cơ sở dữ liệu".', 'teacher/lessons.php?course_id=10', 1, DATE_SUB(NOW(), INTERVAL 99360 MINUTE)),
-(31, 3, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Công nghệ phần mềm".', 'teacher/lessons.php?course_id=12', 0, DATE_SUB(NOW(), INTERVAL 70560 MINUTE)),
-(32, 5, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Xác suất thống kê".', 'teacher/lessons.php?course_id=6', 0, DATE_SUB(NOW(), INTERVAL 96480 MINUTE)),
-(33, 3, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Mạng máy tính".', 'teacher/lessons.php?course_id=8', 1, DATE_SUB(NOW(), INTERVAL 64800 MINUTE)),
-(34, 7, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Kiểm thử phần mềm".', 'teacher/lessons.php?course_id=19', 0, DATE_SUB(NOW(), INTERVAL 103680 MINUTE)),
-(35, 6, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Phát triển ứng dụng di động".', 'teacher/lessons.php?course_id=17', 0, DATE_SUB(NOW(), INTERVAL 126720 MINUTE)),
-(36, 4, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Lập trình Web".', 'teacher/lessons.php?course_id=4', 0, DATE_SUB(NOW(), INTERVAL 112320 MINUTE)),
-(37, 3, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Hệ điều hành".', 'teacher/lessons.php?course_id=7', 0, DATE_SUB(NOW(), INTERVAL 102240 MINUTE)),
-(38, 7, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Điện toán đám mây".', 'teacher/lessons.php?course_id=18', 1, DATE_SUB(NOW(), INTERVAL 100800 MINUTE)),
-(39, 5, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "An toàn và bảo mật thông tin".', 'teacher/lessons.php?course_id=9', 1, DATE_SUB(NOW(), INTERVAL 103680 MINUTE)),
-(40, 5, 'enrollment', 'Sinh viên mới ghi danh', 'Có sinh viên mới ghi danh khóa "Học máy".', 'teacher/lessons.php?course_id=14', 1, DATE_SUB(NOW(), INTERVAL 105120 MINUTE)),
-(41, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Nhập môn lập trình" có bài tập mới: Bài tập 1: Tính toán cơ bản.', 'student/assignment.php?id=1', 0, DATE_SUB(NOW(), INTERVAL 28800 MINUTE)),
-(42, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Nhập môn lập trình" có bài tập mới: Bài tập 2: Mảng và chuỗi.', 'student/assignment.php?id=2', 1, DATE_SUB(NOW(), INTERVAL 21600 MINUTE)),
-(43, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Cấu trúc dữ liệu và giải thuật" có bài tập mới: Cài đặt danh sách liên kết đơn.', 'student/assignment.php?id=3', 1, DATE_SUB(NOW(), INTERVAL 28800 MINUTE)),
-(44, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Cấu trúc dữ liệu và giải thuật" có bài tập mới: So sánh thuật toán sắp xếp.', 'student/assignment.php?id=4', 1, DATE_SUB(NOW(), INTERVAL 4320 MINUTE)),
-(45, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Lập trình hướng đối tượng" có bài tập mới: Xây dựng lớp Sinh viên.', 'student/assignment.php?id=5', 1, DATE_SUB(NOW(), INTERVAL 23040 MINUTE)),
-(46, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Lập trình hướng đối tượng" có bài tập mới: Kế thừa và đa hình: hệ thống hình học.', 'student/assignment.php?id=6', 1, DATE_SUB(NOW(), INTERVAL 18720 MINUTE)),
-(47, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Lập trình Web" có bài tập mới: Bài tập 1: Form đăng ký.', 'student/assignment.php?id=7', 0, DATE_SUB(NOW(), INTERVAL 18720 MINUTE)),
-(48, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Lập trình Web" có bài tập mới: Bài tập 2: Ứng dụng ghi chú (CRUD).', 'student/assignment.php?id=8', 0, DATE_SUB(NOW(), INTERVAL 23040 MINUTE)),
-(49, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Toán rời rạc" có bài tập mới: Bài tập logic mệnh đề.', 'student/assignment.php?id=9', 0, DATE_SUB(NOW(), INTERVAL 14400 MINUTE)),
-(50, 8, 'assignment_new', 'Bài tập mới', 'Khóa "Toán rời rạc" có bài tập mới: Bài tập đếm và tổ hợp.', 'student/assignment.php?id=10', 0, DATE_SUB(NOW(), INTERVAL 21600 MINUTE)),
-(51, 8, 'quiz_open', 'Bài kiểm tra đang mở', 'Bài kiểm tra "Nhập môn lập trình" đang mở, hãy hoàn thành trước hạn.', 'student/quiz.php?id=1', 1, DATE_SUB(NOW(), INTERVAL 12960 MINUTE)),
-(52, 8, 'quiz_open', 'Bài kiểm tra đang mở', 'Bài kiểm tra "Lập trình Web" đang mở, hãy hoàn thành trước hạn.', 'student/quiz.php?id=4', 0, DATE_SUB(NOW(), INTERVAL 10080 MINUTE)),
-(53, 8, 'quiz_open', 'Bài kiểm tra đang mở', 'Bài kiểm tra "An toàn và bảo mật thông tin" đang mở, hãy hoàn thành trước hạn.', 'student/quiz.php?id=9', 1, DATE_SUB(NOW(), INTERVAL 2880 MINUTE)),
-(54, 8, 'quiz_open', 'Bài kiểm tra đang mở', 'Bài kiểm tra "Cơ sở dữ liệu" đang mở, hãy hoàn thành trước hạn.', 'student/quiz.php?id=10', 0, DATE_SUB(NOW(), INTERVAL 11520 MINUTE));
-
-INSERT INTO activity_logs (id, user_id, action, entity_type, entity_id, detail, ip, created_at) VALUES
-(1, 3, 'course.create', 'course', 1, 'Tạo khóa học: Nhập môn lập trình', '192.168.1.15', DATE_SUB(NOW(), INTERVAL 154080 MINUTE)),
-(2, 3, 'course.create', 'course', 2, 'Tạo khóa học: Cấu trúc dữ liệu và giải thuật', '192.168.1.15', DATE_SUB(NOW(), INTERVAL 197280 MINUTE)),
-(3, 4, 'course.create', 'course', 3, 'Tạo khóa học: Lập trình hướng đối tượng', '113.161.20.45', DATE_SUB(NOW(), INTERVAL 178560 MINUTE)),
-(4, 4, 'course.create', 'course', 4, 'Tạo khóa học: Lập trình Web', '171.248.12.99', DATE_SUB(NOW(), INTERVAL 201600 MINUTE)),
-(5, 5, 'course.create', 'course', 5, 'Tạo khóa học: Toán rời rạc', '113.161.20.45', DATE_SUB(NOW(), INTERVAL 249120 MINUTE)),
-(6, 5, 'course.create', 'course', 6, 'Tạo khóa học: Xác suất thống kê', '127.0.0.1', DATE_SUB(NOW(), INTERVAL 213120 MINUTE)),
-(7, 3, 'course.create', 'course', 7, 'Tạo khóa học: Hệ điều hành', '113.161.20.45', DATE_SUB(NOW(), INTERVAL 177120 MINUTE)),
-(8, 3, 'course.create', 'course', 8, 'Tạo khóa học: Mạng máy tính', '192.168.1.15', DATE_SUB(NOW(), INTERVAL 244800 MINUTE)),
-(9, 5, 'course.create', 'course', 9, 'Tạo khóa học: An toàn và bảo mật thông tin', '192.168.1.22', DATE_SUB(NOW(), INTERVAL 224640 MINUTE)),
-(10, 4, 'course.create', 'course', 10, 'Tạo khóa học: Cơ sở dữ liệu', '171.248.12.99', DATE_SUB(NOW(), INTERVAL 192960 MINUTE)),
-(11, 4, 'course.create', 'course', 11, 'Tạo khóa học: Phân tích và thiết kế hệ thống thông tin', '192.168.1.22', DATE_SUB(NOW(), INTERVAL 227520 MINUTE)),
-(12, 3, 'course.create', 'course', 12, 'Tạo khóa học: Công nghệ phần mềm', '192.168.1.22', DATE_SUB(NOW(), INTERVAL 161280 MINUTE)),
-(13, 2, 'course.publish', 'course', 1, 'Công khai khóa học', '113.161.20.45', DATE_SUB(NOW(), INTERVAL 131040 MINUTE)),
-(14, 1, 'course.publish', 'course', 2, 'Công khai khóa học', '171.248.12.99', DATE_SUB(NOW(), INTERVAL 105120 MINUTE)),
-(15, 1, 'course.publish', 'course', 3, 'Công khai khóa học', '192.168.1.22', DATE_SUB(NOW(), INTERVAL 128160 MINUTE)),
-(16, 1, 'course.publish', 'course', 4, 'Công khai khóa học', '171.248.12.99', DATE_SUB(NOW(), INTERVAL 125280 MINUTE)),
-(17, 2, 'course.publish', 'course', 5, 'Công khai khóa học', '127.0.0.1', DATE_SUB(NOW(), INTERVAL 103680 MINUTE)),
-(18, 2, 'course.publish', 'course', 6, 'Công khai khóa học', '113.161.20.45', DATE_SUB(NOW(), INTERVAL 109440 MINUTE)),
-(19, 1, 'user.lock', 'user', 30, 'Khóa tài khoản vi phạm quy chế', '127.0.0.1', DATE_SUB(NOW(), INTERVAL 4320 MINUTE)),
-(20, 1, 'user.create', 'user', 7, 'Tạo tài khoản giảng viên', '27.72.100.8', DATE_SUB(NOW(), INTERVAL 316800 MINUTE)),
-(21, 2, 'category.create', 'category', 20, 'Thêm danh mục Robot & Tự động hóa', '127.0.0.1', DATE_SUB(NOW(), INTERVAL 216000 MINUTE)),
-(22, 3, 'assignment.create', 'assignment', 1, 'Tạo bài tập: Bài tập 1: Tính toán cơ bản', '27.72.100.8', DATE_SUB(NOW(), INTERVAL 18720 MINUTE)),
-(23, 3, 'assignment.create', 'assignment', 2, 'Tạo bài tập: Bài tập 2: Mảng và chuỗi', '192.168.1.15', DATE_SUB(NOW(), INTERVAL 51840 MINUTE)),
-(24, 3, 'assignment.create', 'assignment', 3, 'Tạo bài tập: Cài đặt danh sách liên kết đơn', '127.0.0.1', DATE_SUB(NOW(), INTERVAL 23040 MINUTE)),
-(25, 3, 'assignment.create', 'assignment', 4, 'Tạo bài tập: So sánh thuật toán sắp xếp', '27.72.100.8', DATE_SUB(NOW(), INTERVAL 36000 MINUTE)),
-(26, 4, 'assignment.create', 'assignment', 5, 'Tạo bài tập: Xây dựng lớp Sinh viên', '127.0.0.1', DATE_SUB(NOW(), INTERVAL 21600 MINUTE)),
-(27, 4, 'assignment.create', 'assignment', 6, 'Tạo bài tập: Kế thừa và đa hình: hệ thống hình học', '192.168.1.22', DATE_SUB(NOW(), INTERVAL 28800 MINUTE)),
-(28, 4, 'assignment.create', 'assignment', 7, 'Tạo bài tập: Bài tập 1: Form đăng ký', '171.248.12.99', DATE_SUB(NOW(), INTERVAL 14400 MINUTE)),
-(29, 4, 'assignment.create', 'assignment', 8, 'Tạo bài tập: Bài tập 2: Ứng dụng ghi chú (CRUD)', '171.248.12.99', DATE_SUB(NOW(), INTERVAL 47520 MINUTE)),
-(30, 3, 'grade.save', 'submission', 2, 'Lưu điểm bài nộp', '192.168.1.22', DATE_SUB(NOW(), INTERVAL 31582 MINUTE)),
-(31, 3, 'grade.save', 'submission', 4, 'Lưu điểm bài nộp', '27.72.100.8', DATE_SUB(NOW(), INTERVAL 27330 MINUTE)),
-(32, 3, 'grade.save', 'submission', 6, 'Lưu điểm bài nộp', '127.0.0.1', DATE_SUB(NOW(), INTERVAL 28054 MINUTE)),
-(33, 3, 'grade.save', 'submission', 10, 'Lưu điểm bài nộp', '192.168.1.22', DATE_SUB(NOW(), INTERVAL 762 MINUTE)),
-(34, 3, 'grade.save', 'submission', 11, 'Lưu điểm bài nộp', '192.168.1.15', DATE_SUB(NOW(), INTERVAL 3137 MINUTE)),
-(35, 3, 'grade.save', 'submission', 12, 'Lưu điểm bài nộp', '192.168.1.15', DATE_SUB(NOW(), INTERVAL 3331 MINUTE)),
-(36, 3, 'grade.save', 'submission', 15, 'Lưu điểm bài nộp', '127.0.0.1', DATE_SUB(NOW(), INTERVAL 29002 MINUTE)),
-(37, 3, 'grade.save', 'submission', 18, 'Lưu điểm bài nộp', '113.161.20.45', DATE_SUB(NOW(), INTERVAL 2839 MINUTE)),
-(38, 8, 'login', 'user', 8, 'Đăng nhập thành công', '113.161.20.45', DATE_SUB(NOW(), INTERVAL 517 MINUTE)),
-(39, 9, 'login', 'user', 9, 'Đăng nhập thành công', '113.161.20.45', DATE_SUB(NOW(), INTERVAL 22 MINUTE)),
-(40, 10, 'login', 'user', 10, 'Đăng nhập thành công', '171.248.12.99', DATE_SUB(NOW(), INTERVAL 515 MINUTE)),
-(41, 3, 'login', 'user', 3, 'Đăng nhập thành công', '192.168.1.22', DATE_SUB(NOW(), INTERVAL 295 MINUTE)),
-(42, 1, 'login', 'user', 1, 'Đăng nhập thành công', '171.248.12.99', DATE_SUB(NOW(), INTERVAL 206 MINUTE));
 
 -- Hết file.
