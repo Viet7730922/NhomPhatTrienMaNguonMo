@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/student.php';
+require_once __DIR__ . '/../includes/assignments.php';
 require_once __DIR__ . '/../includes/notify.php';
 
 requireRole('student');
@@ -29,6 +30,9 @@ $stmt = db()->prepare('SELECT * FROM submissions WHERE assignment_id = ? AND stu
 $stmt->execute([$assignmentId, $studentId]);
 $sub   = $stmt->fetch() ?: null;
 $files = $sub ? getSubmissionFiles((int) $sub['id']) : [];
+$submissionMode = $assignment['submission_mode'] ?? 'both';
+$allowsFiles = in_array($submissionMode, ['file', 'both'], true);
+$allowsText = in_array($submissionMode, ['online_text', 'both'], true);
 
 $locked  = $sub !== null && $sub['score'] !== null;      // đã chấm thì khóa, không sửa được
 $due     = $assignment['due_date'] ? strtotime($assignment['due_date']) : null;
@@ -36,6 +40,9 @@ $pastDue = $due !== null && time() > $due;
 
 $errors    = [];
 $noteInput = $sub['answer_text'] ?? '';
+$editorInput = $sub
+    ? renderSubmissionAnswer($noteInput, $sub['answer_format'] ?? 'plain')
+    : '';
 
 if (isPost()) {
     if (!csrfVerify()) {
@@ -44,15 +51,38 @@ if (isPost()) {
         $errors[] = 'Bài nộp đã được chấm điểm nên không thể chỉnh sửa.';
     } else {
         $noteInput = trim($_POST['answer_text'] ?? '');
-        if (mb_strlen($noteInput) > 5000) {
-            $errors[] = 'Ghi chú tối đa 5000 ký tự.';
+        $answerHtml = '';
+        $answerFormat = 'plain';
+        if ($allowsText && strlen($noteInput) > 60000) {
+            $errors[] = 'Nội dung Online text tối đa 60 KB.';
+        } elseif ($allowsText && $noteInput !== '') {
+            try {
+                $answerHtml = sanitizeSubmissionHtml($noteInput);
+                $answerFormat = 'html';
+            } catch (RuntimeException $ex) {
+                $errors[] = $ex->getMessage();
+            }
+        }
+        $editorInput = $answerHtml !== '' ? $answerHtml : e($noteInput);
+        $plainAnswer = trim(str_replace(
+            "\xC2\xA0",
+            ' ',
+            html_entity_decode(strip_tags($answerHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+        ));
+        if (strlen($answerHtml) > 60000) {
+            $errors[] = 'Nội dung Online text tối đa 60 KB.';
         }
 
         $existingIds = array_map('intval', array_column($files, 'id'));
-        $removeIds   = array_values(array_intersect($existingIds, array_map('intval', (array) ($_POST['remove_files'] ?? []))));
+        $removeIds   = $allowsFiles
+            ? array_values(array_intersect($existingIds, array_map('intval', (array) ($_POST['remove_files'] ?? []))))
+            : [];
         $newFiles    = normalizeUploadedFiles($_FILES['files'] ?? null);
         $keepCount   = count($existingIds) - count($removeIds);
 
+        if (!$allowsFiles && $newFiles) {
+            $errors[] = 'Bài tập này không nhận file đính kèm.';
+        }
         if ($keepCount + count($newFiles) > SUBMISSION_MAX_FILES) {
             $errors[] = 'Mỗi bài nộp tối đa ' . SUBMISSION_MAX_FILES . ' file.';
         }
@@ -62,8 +92,12 @@ if (isPost()) {
                 $errors[] = $err;
             }
         }
-        if ($keepCount + count($newFiles) === 0 && $noteInput === '') {
-            $errors[] = 'Vui lòng đính kèm ít nhất một file hoặc nhập ghi chú.';
+        if ($submissionMode === 'file' && $keepCount + count($newFiles) === 0) {
+            $errors[] = 'Vui lòng đính kèm ít nhất một file.';
+        } elseif ($submissionMode === 'online_text' && $plainAnswer === '') {
+            $errors[] = 'Vui lòng nhập nội dung bài làm.';
+        } elseif ($submissionMode === 'both' && $keepCount + count($newFiles) === 0 && $plainAnswer === '') {
+            $errors[] = 'Vui lòng đính kèm ít nhất một file hoặc nhập nội dung bài làm.';
         }
 
         if (!$errors) {
@@ -88,11 +122,11 @@ if (isPost()) {
 
                 if ($row) {
                     $subId = (int) $row['id'];
-                    $pdo->prepare('UPDATE submissions SET answer_text = ?, submitted_at = NOW() WHERE id = ?')
-                        ->execute([$noteInput !== '' ? $noteInput : null, $subId]);
+                    $pdo->prepare('UPDATE submissions SET answer_text = ?, answer_format = ?, submitted_at = NOW() WHERE id = ?')
+                        ->execute([$plainAnswer !== '' ? $answerHtml : null, $answerFormat, $subId]);
                 } else {
-                    $pdo->prepare('INSERT INTO submissions (assignment_id, student_id, answer_text) VALUES (?, ?, ?)')
-                        ->execute([$assignmentId, $studentId, $noteInput !== '' ? $noteInput : null]);
+                    $pdo->prepare('INSERT INTO submissions (assignment_id, student_id, answer_text, answer_format) VALUES (?, ?, ?, ?)')
+                        ->execute([$assignmentId, $studentId, $plainAnswer !== '' ? $answerHtml : null, $answerFormat]);
                     $subId = (int) $pdo->lastInsertId();
                 }
 
@@ -243,8 +277,8 @@ require __DIR__ . '/../includes/header.php';
             </div>
         <?php endif; ?>
 
-        <!-- File đã nộp (khi đã khóa) -->
-        <?php if ($locked): ?>
+        <!-- Nội dung đã nộp (khi đã khóa) -->
+        <?php if ($locked && ($files || $submissionMode === 'file')): ?>
             <div class="card mb-4">
                 <div class="card-header bg-white fw-bold">File đã nộp (<?= count($files) ?>)</div>
                 <?php if (!$files): ?>
@@ -262,14 +296,19 @@ require __DIR__ . '/../includes/header.php';
                         <?php endforeach; ?>
                     </ul>
                 <?php endif; ?>
-                <?php if (!empty($sub['answer_text'])): ?>
-                    <div class="card-body border-top">
-                        <div class="fw-semibold small">Ghi chú của bạn:</div>
-                        <?= nl2br(e($sub['answer_text'])) ?>
-                    </div>
-                <?php endif; ?>
             </div>
-        <?php else: ?>
+        <?php endif; ?>
+
+        <?php if ($locked && !empty($sub['answer_text'])): ?>
+            <div class="card mb-4">
+                <div class="card-header bg-white fw-bold"><?= $submissionMode === 'online_text' ? 'Online text đã nộp' : 'Nội dung đã nộp' ?></div>
+                <div class="card-body submission-answer">
+                    <?= renderSubmissionAnswer($sub['answer_text'], $sub['answer_format'] ?? 'plain') ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!$locked): ?>
             <!-- Form nộp / sửa bài -->
             <div class="card">
                 <div class="card-header bg-white fw-bold"><?= $sub ? 'Chỉnh sửa bài nộp' : 'Nộp bài' ?></div>
@@ -287,7 +326,7 @@ require __DIR__ . '/../includes/header.php';
                     <form method="post" enctype="multipart/form-data" novalidate>
                         <?= csrfField() ?>
 
-                        <?php if ($files): ?>
+                        <?php if ($allowsFiles && $files): ?>
                             <div class="mb-3">
                                 <div class="fw-semibold mb-2">File đã nộp (đánh dấu để xóa)</div>
                                 <?php foreach ($files as $f): ?>
@@ -304,22 +343,45 @@ require __DIR__ . '/../includes/header.php';
                             </div>
                         <?php endif; ?>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold" for="files">Thêm file</label>
-                            <input type="file" class="form-control" id="files" name="files[]" multiple accept="<?= e($accept) ?>">
-                            <div class="form-text">
-                                Tối đa <?= SUBMISSION_MAX_FILES ?> file mỗi bài nộp, mỗi file không quá
-                                <?= (int) (SUBMISSION_MAX_SIZE / 1048576) ?> MB.
-                                Cho phép: tài liệu, file nén, ảnh và mã nguồn
-                                (<?= e(implode(', ', SUBMISSION_ALLOWED_EXT)) ?>).
+                        <?php if ($allowsFiles): ?>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" for="files">Thêm file</label>
+                                <input type="file" class="form-control" id="files" name="files[]" multiple accept="<?= e($accept) ?>">
+                                <div class="form-text">
+                                    Tối đa <?= SUBMISSION_MAX_FILES ?> file mỗi bài nộp, mỗi file không quá
+                                    <?= (int) (SUBMISSION_MAX_SIZE / 1048576) ?> MB.
+                                    Cho phép: tài liệu, file nén, ảnh và mã nguồn
+                                    (<?= e(implode(', ', SUBMISSION_ALLOWED_EXT)) ?>).
+                                </div>
+                                <ul class="small mt-2 mb-0" id="file-preview"></ul>
                             </div>
-                            <ul class="small mt-2 mb-0" id="file-preview"></ul>
-                        </div>
+                        <?php endif; ?>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold" for="answer_text">Ghi chú gửi giảng viên (không bắt buộc)</label>
-                            <textarea class="form-control" id="answer_text" name="answer_text" rows="4"><?= e($noteInput) ?></textarea>
-                        </div>
+                        <?php if ($allowsText): ?>
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold" for="answer_text">
+                                    <?= $submissionMode === 'online_text' ? 'Bài làm Online text' : 'Online text (không bắt buộc nếu đã đính kèm file)' ?>
+                                </label>
+                                <textarea class="form-control" id="answer_text" name="answer_text" rows="8"
+                                          data-online-text-fallback maxlength="60000"><?= e($noteInput) ?></textarea>
+                                <div class="online-text-editor d-none" data-online-text-editor>
+                                    <div class="online-text-toolbar" role="toolbar" aria-label="Định dạng bài làm">
+                                        <button type="button" class="btn btn-sm btn-light" data-editor-command="bold" aria-label="In đậm"><i class="bi bi-type-bold"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light" data-editor-command="italic" aria-label="In nghiêng"><i class="bi bi-type-italic"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light" data-editor-command="underline" aria-label="Gạch chân"><i class="bi bi-type-underline"></i></button>
+                                        <span class="online-text-toolbar-divider"></span>
+                                        <button type="button" class="btn btn-sm btn-light" data-editor-command="insertUnorderedList" aria-label="Danh sách dấu đầu dòng"><i class="bi bi-list-ul"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light" data-editor-command="insertOrderedList" aria-label="Danh sách đánh số"><i class="bi bi-list-ol"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light" data-editor-command="blockquote" aria-label="Trích dẫn"><i class="bi bi-quote"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light" data-editor-command="createLink" aria-label="Chèn liên kết"><i class="bi bi-link-45deg"></i></button>
+                                        <button type="button" class="btn btn-sm btn-light" data-editor-command="removeFormat" aria-label="Xóa định dạng"><i class="bi bi-eraser"></i></button>
+                                    </div>
+                                    <div class="online-text-content" contenteditable="true" role="textbox" aria-multiline="true"
+                                         aria-label="Nội dung bài làm"><?= $editorInput ?></div>
+                                    <div class="online-text-footer">Có thể định dạng nội dung bằng thanh công cụ phía trên.</div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary"><?= $sub ? 'Lưu thay đổi' : 'Nộp bài' ?></button>
@@ -329,12 +391,14 @@ require __DIR__ . '/../includes/header.php';
                 </div>
             </div>
 
+            <?php if ($allowsFiles): ?>
             <script>
             (function () {
                 var input = document.getElementById('files');
                 var box = document.getElementById('file-preview');
                 var maxFiles = <?= (int) $maxNew ?>;
                 var maxSize = <?= (int) SUBMISSION_MAX_SIZE ?>;
+                if (!input || !box) return;
                 input.addEventListener('change', function () {
                     box.innerHTML = '';
                     Array.prototype.forEach.call(input.files, function (f) {
@@ -355,6 +419,7 @@ require __DIR__ . '/../includes/header.php';
                 });
             })();
             </script>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>

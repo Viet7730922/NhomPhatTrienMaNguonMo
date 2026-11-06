@@ -8,7 +8,7 @@ $submissionId = (int) ($_GET['id'] ?? 0);
 // Lấy bài nộp, đồng thời kiểm tra khóa học chứa nó có phải của mình không
 $sql = "SELECT s.*, u.full_name, u.email,
                a.title AS assignment_title, a.description AS assignment_description,
-               a.due_date, a.max_score, a.course_id, c.title AS course_title
+               a.due_date, a.max_score, a.course_id, a.submission_mode, c.title AS course_title
         FROM submissions s
         JOIN users u       ON u.id = s.student_id
         JOIN assignments a ON a.id = s.assignment_id
@@ -102,6 +102,7 @@ require __DIR__ . '/../includes/header.php';
             </div>
         </div>
 
+        <?php if ($files || ($sub['submission_mode'] ?? 'both') === 'file'): ?>
         <div class="card mb-4">
             <div class="card-header bg-white fw-bold">File đã nộp (<?= count($files) ?>)</div>
             <?php if (!$files): ?>
@@ -123,14 +124,15 @@ require __DIR__ . '/../includes/header.php';
                 </ul>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
 
         <div class="card">
-            <div class="card-header bg-white fw-bold">Ghi chú của sinh viên</div>
-            <div class="card-body">
+            <div class="card-header bg-white fw-bold"><?= ($sub['answer_format'] ?? 'plain') === 'html' ? 'Online text của sinh viên' : 'Ghi chú của sinh viên' ?></div>
+            <div class="card-body submission-answer">
                 <?php if (!empty($sub['answer_text'])): ?>
-                    <?= nl2br(e($sub['answer_text'])) ?>
+                    <?= renderSubmissionAnswer($sub['answer_text'], $sub['answer_format'] ?? 'plain') ?>
                 <?php else: ?>
-                    <span class="text-muted">Không có ghi chú.</span>
+                    <span class="text-muted">Sinh viên không nhập nội dung.</span>
                 <?php endif; ?>
             </div>
         </div>

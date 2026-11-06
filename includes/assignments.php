@@ -18,6 +18,95 @@ const SUBMISSION_ALLOWED_EXT = [
     'c', 'h', 'cpp', 'hpp', 'cc', 'cs', 'java', 'py', 'js', 'ts', 'html', 'css', 'php', 'sql', 'json', 'xml', 'ipynb', 'sh',
 ];
 
+function sanitizeSubmissionHtml(string $html): string
+{
+    if ($html === '') {
+        return '';
+    }
+
+    $document = new DOMDocument('1.0', 'UTF-8');
+    $previous = libxml_use_internal_errors(true);
+    $loaded = $document->loadHTML(
+        '<?xml encoding="UTF-8"><div id="submission-root">' . $html . '</div>',
+        LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+    );
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+
+    if (!$loaded) {
+        throw new RuntimeException('Không thể đọc nội dung bài nộp.');
+    }
+
+    $root = $document->getElementById('submission-root');
+    if (!$root) {
+        throw new RuntimeException('Không thể đọc nội dung bài nộp.');
+    }
+
+    $sanitizeNode = function (DOMNode $node) use (&$sanitizeNode): void {
+        if ($node instanceof DOMComment || $node instanceof DOMProcessingInstruction) {
+            $node->parentNode?->removeChild($node);
+            return;
+        }
+        if (!$node instanceof DOMElement) {
+            return;
+        }
+
+        $blocked = ['script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'form', 'input', 'button', 'textarea', 'select'];
+        if (in_array(strtolower($node->tagName), $blocked, true)) {
+            $node->parentNode?->removeChild($node);
+            return;
+        }
+
+        $child = $node->firstChild;
+        while ($child) {
+            $next = $child->nextSibling;
+            $sanitizeNode($child);
+            $child = $next;
+        }
+
+        $allowed = ['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'pre', 'code', 'a', 'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td'];
+        if (!in_array(strtolower($node->tagName), $allowed, true)) {
+            $parent = $node->parentNode;
+            if ($parent) {
+                while ($node->firstChild) {
+                    $parent->insertBefore($node->firstChild, $node);
+                }
+                $parent->removeChild($node);
+            }
+            return;
+        }
+
+        $href = strtolower($node->tagName) === 'a' ? trim($node->getAttribute('href')) : '';
+        while ($node->attributes->length > 0) {
+            $node->removeAttributeNode($node->attributes->item(0));
+        }
+        if ($href !== '' && preg_match('~^(https?://|mailto:|/(?!/)|#)~i', $href)) {
+            $node->setAttribute('href', $href);
+        }
+    };
+
+    $child = $root->firstChild;
+    while ($child) {
+        $next = $child->nextSibling;
+        $sanitizeNode($child);
+        $child = $next;
+    }
+
+    $result = '';
+    foreach ($root->childNodes as $child) {
+        $result .= $document->saveHTML($child);
+    }
+    return $result;
+}
+
+function renderSubmissionAnswer(?string $answer, string $format = 'plain'): string
+{
+    if ($answer === null || $answer === '') {
+        return '';
+    }
+    return $format === 'html' ? sanitizeSubmissionHtml($answer) : nl2br(e($answer));
+}
+
 /**
  * Lấy bài tập thuộc khóa học của giảng viên đang đăng nhập.
  * Không phải của mình hoặc không tồn tại thì báo lỗi và chuyển về dashboard.

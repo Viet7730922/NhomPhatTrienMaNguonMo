@@ -93,7 +93,7 @@ require __DIR__ . '/includes/header.php';
 <?php else: ?>
     <p class="text-muted small">Tìm thấy <strong><?= $total ?></strong> khóa học</p>
 
-    <div class="row g-4">
+    <div class="row g-4 course-grid">
         <?php foreach ($courses as $c): ?>
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 overflow-hidden">
