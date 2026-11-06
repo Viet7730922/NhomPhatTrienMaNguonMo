@@ -94,30 +94,41 @@ require __DIR__ . '/../includes/header.php';
                         <td class="text-center"><?= (int) $c['lesson_count'] ?></td>
                         <td class="text-center"><?= (int) $c['student_count'] ?></td>
                         <td class="text-end text-nowrap">
-                            <a href="<?= url('teacher/lessons.php?course_id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-list-ul"></i> Bài học
-                            </a>
-                            <a href="<?= url('teacher/assignments.php?course_id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-clipboard-check"></i> Bài tập
-                                <?php if ((int) $c['pending_count'] > 0): ?>
-                                    <span class="badge text-bg-warning"><?= (int) $c['pending_count'] ?></span>
-                                <?php endif; ?>
-                            </a>
-                            <a href="<?= url('teacher/quizzes.php?course_id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-ui-checks"></i> Bài kiểm tra
-                            </a>
-                            <a href="<?= url('teacher/quiz_form.php?course_id=' . (int) $c['id']) ?>" class="btn btn-sm btn-primary">
-                                <i class="bi bi-plus-lg"></i> Tạo bài tập trắc nghiệm
-                            </a>
-                            <a href="<?= url('teacher/course_form.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-pencil"></i> Sửa
-                            </a>
-                            <form method="post" action="<?= url('teacher/course_delete.php') ?>" class="d-inline"
-                                  onsubmit="return confirm('Xóa khóa học này? Toàn bộ bài học, ghi danh, bài tập và bài nộp liên quan sẽ bị xóa vĩnh viễn.');">
-                                <?= csrfField() ?>
-                                <input type="hidden" name="course_id" value="<?= (int) $c['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                            </form>
+                            <div class="d-inline-flex flex-column align-items-end gap-2">
+                                <!-- Quản lý nội dung của khóa học -->
+                                <div class="btn-group btn-group-sm" role="group" aria-label="Quản lý nội dung khóa học">
+                                    <a href="<?= url('teacher/lessons.php?course_id=' . (int) $c['id']) ?>" class="btn btn-outline-primary">
+                                        <i class="bi bi-list-ul"></i> Bài học
+                                    </a>
+                                    <a href="<?= url('teacher/assignments.php?course_id=' . (int) $c['id']) ?>" class="btn btn-outline-primary">
+                                        <i class="bi bi-clipboard-check"></i> Bài tập
+                                        <?php if ((int) $c['pending_count'] > 0): ?>
+                                            <span class="badge text-bg-warning" title="Bài chờ chấm"><?= (int) $c['pending_count'] ?></span>
+                                        <?php endif; ?>
+                                    </a>
+                                    <a href="<?= url('teacher/quizzes.php?course_id=' . (int) $c['id']) ?>" class="btn btn-outline-primary">
+                                        <i class="bi bi-ui-checks"></i> Bài kiểm tra
+                                    </a>
+                                </div>
+
+                                <!-- Thao tác khác -->
+                                <div class="d-flex align-items-center gap-3 small">
+                                    <a href="<?= url('teacher/quiz_form.php?course_id=' . (int) $c['id']) ?>" class="link-primary text-decoration-none">
+                                        <i class="bi bi-plus-circle"></i> Tạo bài kiểm tra
+                                    </a>
+                                    <a href="<?= url('teacher/course_form.php?id=' . (int) $c['id']) ?>" class="link-secondary text-decoration-none">
+                                        <i class="bi bi-pencil"></i> Sửa
+                                    </a>
+                                    <form method="post" action="<?= url('teacher/course_delete.php') ?>" class="m-0"
+                                          onsubmit="return confirm('Xóa khóa học này? Toàn bộ bài học, ghi danh, bài tập và bài nộp liên quan sẽ bị xóa vĩnh viễn.');">
+                                        <?= csrfField() ?>
+                                        <input type="hidden" name="course_id" value="<?= (int) $c['id'] ?>">
+                                        <button type="submit" class="btn btn-link btn-sm p-0 border-0 text-danger text-decoration-none align-baseline">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
