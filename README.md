@@ -38,8 +38,9 @@ NhomPhatTrienMaNguonMo/
 │  ├─ config.php
 │  ├─ database.php
 │  └─ mail.example.php
-├─ database/                  # File SQL khởi tạo dữ liệu
-│  └─ database.sql
+├─ database/                  # Schema và dữ liệu mẫu
+│  ├─ database.sql            # Tạo database và các bảng
+│  └─ seed_data.sql           # Dữ liệu mẫu
 ├─ includes/                  # Các thành phần dùng chung
 │  ├─ assignments.php
 │  ├─ auth.php
@@ -126,10 +127,9 @@ NhomPhatTrienMaNguonMo/
 
 ### Bước 2: Import database
 
-- Mở phpMyAdmin
-- Tạo database tên `elearning`
-- Import file: `database/database.sql`
-- Nếu đang nâng cấp database đã có dữ liệu, chạy một lần file `database/migrate_online_text.sql` trong phpMyAdmin (tab SQL). Các bài tập cũ tiếp tục nhận file và ghi chú như trước.
+- Mở phpMyAdmin và import `database/database.sql` để tạo database cùng toàn bộ bảng.
+- Tiếp theo import `database/seed_data.sql` để nạp dữ liệu mẫu.
+- `database.sql` xóa và tạo lại các bảng, vì vậy không import lại vào database đang có dữ liệu cần giữ.
 
 ### Bước 3: Cấu hình ứng dụng
 
@@ -190,7 +190,8 @@ Sau khi import database, các tài khoản demo có sẵn trong file SQL, ví d�
 
 ## 8. Ghi chú
 
-- File `database/database.sql` là file khởi tạo schema và dữ liệu mẫu cho toàn bộ hệ thống.
+- `database/database.sql` chỉ chứa lệnh tạo cấu trúc database và bảng.
+- `database/seed_data.sql` chỉ chứa dữ liệu mẫu; import sau `database.sql`.
 - Thư mục `uploads/` chứa tài liệu bài học và sản phẩm nộp bài của sinh viên.
 - Khi thay đổi cấu trúc project hoặc đường dẫn lưu file, cần cập nhật tương ứng trong `config/` và các file upload xử lý.
 
