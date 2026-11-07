@@ -12,7 +12,7 @@ $quiz      = getQuizForStudent($quizId, $studentId);
 
 if (!$quiz) {
     flash('danger', 'Không tìm thấy bài kiểm tra hoặc bạn chưa ghi danh khóa học này.');
-    redirect(url('student/quizzes.php'));
+    redirect(url('student/assignments.php'));
 }
 $selfUrl = url('student/quiz.php?id=' . $quizId);
 
@@ -49,7 +49,7 @@ require __DIR__ . '/../includes/header.php';
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="<?= url('student/quizzes.php') ?>">Bài kiểm tra</a></li>
+        <li class="breadcrumb-item"><a href="<?= url('student/assignments.php') ?>">Bài tập & kiểm tra</a></li>
         <li class="breadcrumb-item"><a href="<?= url('course.php?id=' . (int) $quiz['course_id']) ?>"><?= e($quiz['course_title']) ?></a></li>
         <li class="breadcrumb-item active"><?= e($quiz['title']) ?></li>
     </ol>

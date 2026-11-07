@@ -10,7 +10,7 @@ $quiz      = $attempt ? getQuizForStudent((int) $attempt['quiz_id'], $studentId)
 
 if (!$attempt || !$quiz) {
     flash('danger', 'Không tìm thấy lần làm bài hoặc bạn không có quyền truy cập.');
-    redirect(url('student/quizzes.php'));
+    redirect(url('student/assignments.php'));
 }
 $overviewUrl = url('student/quiz.php?id=' . (int) $quiz['id']);
 

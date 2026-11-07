@@ -124,7 +124,7 @@ require __DIR__ . '/includes/header.php';
             <?php if (hasRole('student')): ?>
                 <div class="card-body border-top">
                     <a href="<?= url('student/assignments.php?course_id=' . $courseId) ?>" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-clipboard-check"></i> Bài tập của khóa học
+                        <i class="bi bi-clipboard-check"></i> Bài tập & kiểm tra của khóa học
                     </a>
                 </div>
             <?php endif; ?>

@@ -48,8 +48,7 @@ $roleLabels = ['admin' => 'Quản trị', 'teacher' => 'Giảng viên', 'student
                             <li class="nav-item"><a class="nav-link" href="<?= url('admin/categories.php') ?>">Danh mục</a></li>
 
                         <?php elseif ($user['role'] === 'student'): ?>
-                            <li class="nav-item"><a class="nav-link" href="<?= url('student/assignments.php') ?>">Bài tập</a></li>
-                            <li class="nav-item"><a class="nav-link" href="<?= url('student/quizzes.php') ?>">Kiểm tra</a></li>
+                            <li class="nav-item"><a class="nav-link" href="<?= url('student/assignments.php') ?>">Bài tập & kiểm tra</a></li>
                         <?php endif; ?>
                     <?php endif; ?>
                 </ul>

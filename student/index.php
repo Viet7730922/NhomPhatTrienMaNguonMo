@@ -30,7 +30,7 @@ require __DIR__ . '/../includes/header.php';
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="mb-0">Khóa học của tôi</h3>
     <a href="<?= url('student/assignments.php') ?>" class="btn btn-outline-primary">
-        <i class="bi bi-clipboard-check"></i> Tất cả bài tập
+        <i class="bi bi-clipboard-check"></i> Bài tập & kiểm tra
     </a>
 </div>
 
@@ -70,8 +70,8 @@ require __DIR__ . '/../includes/header.php';
                                     <?php else: ?>
                                         <a href="<?= url('course.php?id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-secondary flex-grow-1">Xem khóa học</a>
                                     <?php endif; ?>
-                                    <a href="<?= url('student/assignments.php?course_id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary" title="Bài tập">
-                                        <i class="bi bi-clipboard-check"></i>
+                                    <a href="<?= url('student/assignments.php?course_id=' . (int) $c['id']) ?>" class="btn btn-sm btn-outline-primary" title="Bài tập & kiểm tra">
+                                        <i class="bi bi-clipboard-check"></i><span class="visually-hidden"> Bài tập & kiểm tra</span>
                                     </a>
                                 </div>
                             </div>
